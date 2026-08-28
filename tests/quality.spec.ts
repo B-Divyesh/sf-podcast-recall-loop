@@ -34,6 +34,43 @@ test('mobile layout does not scroll sideways', async ({ page }) => {
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
 
+test('visible links and buttons meet the 44px touch-target baseline', async ({ page }) => {
+  for (const route of ['/', '/demo']) {
+    await page.goto(route);
+    const undersized = await page.locator('a[href], button').evaluateAll(elements => elements.flatMap(element => {
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const isRendered = box.width > 0 && box.height > 0 && style.visibility !== 'hidden';
+      return isRendered && (box.width < 44 || box.height < 44)
+        ? [{ label: element.textContent?.trim(), width: box.width, height: box.height }]
+        : [];
+    }));
+    expect(undersized).toEqual([]);
+  }
+});
+
+test('dark theme has no serious accessibility issues', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  for (const route of ['/', '/demo']) {
+    await page.goto(route);
+    const results = await new AxeBuilder({ page: page as never }).analyze();
+    expect(results.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);
+  }
+});
+
+test('reduced motion removes scrolling and visible movement', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/demo');
+  const styles = await page.locator('.active-card').evaluate(element => ({
+    animationDuration: getComputedStyle(element).animationDuration,
+    transitionDuration: getComputedStyle(element).transitionDuration,
+    scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior
+  }));
+  expect(Number.parseFloat(styles.animationDuration)).toBeLessThanOrEqual(0.00001);
+  expect(Number.parseFloat(styles.transitionDuration)).toBeLessThanOrEqual(0.00001);
+  expect(styles.scrollBehavior).toBe('auto');
+});
+
 test('reset demo restores its five original clips', async ({ page }) => {
   await page.goto('/demo');
   await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
