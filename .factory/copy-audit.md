@@ -48,7 +48,7 @@ Read-aloud check: the headline, situation sentence, action, outcome, and three f
 | The app reads podcast titles from the RSS feed you request. | 11 | Pass |
 | It stores written notes, not audio. | 6 | Pass |
 | You write every question and takeaway. | 6 | Pass |
-| The app has no account or tracking. | 7 | Pass |
+| You do not need an account. | 6 | Pass |
 
 ## One-time license section
 
@@ -57,13 +57,13 @@ Read-aloud check: the headline, situation sentence, action, outcome, and three f
 | Keep going when eight is not enough | 7 | Pass |
 | Unlimited clips for $9 once | 5 | Pass |
 | The one-time license removes only the clip limit. | 8 | Pass |
-| Reviews, exports, and accessibility stay free. | 6 | Pass |
+| Reviews and exports stay free. | 5 | Pass |
 | Buy unlimited — $9 once | 5 | Pass |
 | Have a license? | 3 | Pass |
 | License token | 2 | Pass |
 | Verify license | 2 | Pass |
 | Paste the token from your purchase email. | 7 | Pass |
-| Sociobot is the merchant of record and handles refunds. | 9 | Pass |
+| Sociobot handles checkout. | 3 | Pass |
 | Privacy | 1 | Pass |
 | Terms | 1 | Pass |
 

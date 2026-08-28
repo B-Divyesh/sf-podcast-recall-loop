@@ -49,11 +49,25 @@
     "sandbox": "fresh /demo sample; add three clips, then assert a ninth clip is refused"
   },
   {
+    "id": "free-reviews-exports",
+    "claim": "Reviews and exports stay free",
+    "where": "landing price",
+    "test": "npm test -- --grep @claim:free-reviews-exports",
+    "sandbox": "fresh /demo context with no license; complete a review and download a CSV export"
+  },
+  {
     "id": "local-privacy",
     "claim": "The demo recall flow sends no note data or tracking requests to another origin",
     "where": "landing privacy facts, privacy page, README",
     "test": "npm test -- --grep @claim:local-privacy",
     "sandbox": "fresh /demo sample; observe every request while revealing and answering a question and assert all are same-origin"
+  },
+  {
+    "id": "no-account",
+    "claim": "The demo recall flow works without an account",
+    "where": "landing boundaries, privacy page",
+    "test": "npm test -- --grep @claim:no-account",
+    "sandbox": "fresh /demo context with no stored credentials; complete a review and assert there are no sign-in controls or authentication requests"
   },
   {
     "id": "browser-persistence",

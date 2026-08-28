@@ -73,6 +73,18 @@ test('@claim:free-limit the free library accepts eight clips and refuses a ninth
   await expect(page.locator('#clip-status')).toHaveText('The free library holds eight clips. Export your notes or delete one to add another.');
 });
 
+test('@claim:free-reviews-exports reviews and CSV exports work without a license', async ({ page }) => {
+  await page.goto('/demo');
+  expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBeNull();
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export CSV' }).click();
+  const content = await readDownload((await downloadPromise).createReadStream());
+  expect(content).toContain('podcast,episode,timestamp,prompt,takeaway,due_date,reviews');
+});
+
 test('@claim:local-privacy the demo recall flow sends no note data to another origin', async ({ page }) => {
   const external: string[] = [];
   page.on('request', request => {
@@ -82,6 +94,19 @@ test('@claim:local-privacy the demo recall flow sends no note data to another or
   await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
   await page.getByRole('button', { name: 'I remembered' }).click();
   expect(external).toEqual([]);
+});
+
+test('@claim:no-account the demo recall flow works without an account', async ({ page }) => {
+  const authenticationRequests: string[] = [];
+  page.on('request', request => {
+    if (/auth|login|sign-in|signup|register/i.test(request.url())) authenticationRequests.push(request.url());
+  });
+  await page.goto('/demo');
+  await expect(page.locator('input[type="password"], input[autocomplete="username"], input[autocomplete="email"]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+  expect(authenticationRequests).toEqual([]);
 });
 
 test('@claim:browser-persistence saved questions stay in this browser after reload', async ({ page }) => {

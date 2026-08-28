@@ -60,7 +60,7 @@ The privacy policy is at `/privacy`; terms are at `/terms`. RSS URLs are request
 
 ## One-time license
 
-The free library holds eight clips. A $9 one-time license removes that limit. Sociobot is the merchant of record and handles checkout and refunds. Buyers can paste their license on the home page to restore it on another device.
+The free library holds eight clips. A $9 one-time license removes that limit. Sociobot handles checkout. Buyers can paste their license on the home page to restore it on another device.
 
 ## Project notes
 
