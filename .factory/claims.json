@@ -1,0 +1,58 @@
+[
+  {
+    "id": "offline-reload",
+    "claim": "Reviews work offline after the first visit",
+    "where": "landing facts, README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "fresh Chromium context at /demo; wait for the service worker, reload once, then set the context offline and reload"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Demo changes never enter the real note library",
+    "where": "demo banner, README",
+    "test": "npm test -- --grep @claim:demo-isolation",
+    "sandbox": "fresh browser context; add a question in /demo, then open /app and assert an empty real library"
+  },
+  {
+    "id": "rss-lookup",
+    "claim": "An RSS feed can fill the podcast and episode fields",
+    "where": "capture form, README",
+    "test": "npm test -- --grep @claim:rss-lookup",
+    "sandbox": "fresh browser context at /demo with a locally fulfilled RSS response"
+  },
+  {
+    "id": "daily-three",
+    "claim": "The daily recall queue presents no more than three due questions",
+    "where": "landing, app heading, README",
+    "test": "npm test -- --grep @claim:daily-three",
+    "sandbox": "fresh /demo sample with five clips; assert three due items can be completed and the queue is caught up"
+  },
+  {
+    "id": "csv-export",
+    "claim": "Exports saved clips as CSV",
+    "where": "library toolbar, README",
+    "test": "npm test -- --grep @claim:csv-export",
+    "sandbox": "fresh /demo sample; assert the downloaded CSV header and five data rows"
+  },
+  {
+    "id": "markdown-export",
+    "claim": "Exports saved clips as Markdown",
+    "where": "library toolbar, README",
+    "test": "npm test -- --grep @claim:markdown-export",
+    "sandbox": "fresh /demo sample; assert all five prompt headings in the downloaded Markdown"
+  },
+  {
+    "id": "free-limit",
+    "claim": "The free library accepts eight clips",
+    "where": "landing facts, pricing, app limit",
+    "test": "npm test -- --grep @claim:free-limit",
+    "sandbox": "fresh /demo sample; add three clips, then assert a ninth clip is refused"
+  },
+  {
+    "id": "local-privacy",
+    "claim": "The demo recall flow sends no note data to another origin",
+    "where": "landing privacy facts, privacy page",
+    "test": "npm test -- --grep @claim:local-privacy",
+    "sandbox": "fresh /demo sample; observe every request while revealing and answering a question and assert all are same-origin"
+  }
+]
