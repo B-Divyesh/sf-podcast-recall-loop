@@ -15,6 +15,7 @@ The app stores written notes in IndexedDB. It stores no audio. The demo at `/dem
 - JSON backup import
 - An installable PWA and offline review after the first visit
 - A free eight-clip library
+- A $9 one-time license for unlimited clips through Sociobot checkout
 
 ## Try the isolated demo
 
@@ -41,6 +42,8 @@ npm run build
 
 The Playwright suite checks every claim, offline reload, keyboard use, mobile width, route structure, and serious accessibility findings. Vitest covers data and release configuration. The production command writes `index.html` and fingerprinted static assets to `dist/`.
 
+The production build also stamps the service worker from those asset fingerprints. Installed copies therefore receive every new app build without a manual cache-version edit.
+
 Run one claim with its command from [.factory/claims.json](.factory/claims.json):
 
 ```sh
@@ -54,6 +57,10 @@ Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` prov
 ## Privacy
 
 The privacy policy is at `/privacy`; terms are at `/terms`. RSS URLs are requested only when the listener presses **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
+
+## One-time license
+
+The free library holds eight clips. A $9 one-time license removes that limit. Sociobot is the merchant of record and handles checkout and refunds. Buyers can paste their license on the home page to restore it on another device.
 
 ## Project notes
 

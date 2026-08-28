@@ -1,15 +1,10 @@
-const CACHE = 'recall-loop-shell-v3';
-const SHELL = ['/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/assets/recall-ceramics.webp', '/assets/recall-ceramics-small.webp', '/icon-192.png'];
+const CACHE = 'recall-loop-shell-__BUILD_ID__';
+const SHELL = __PRECACHE_MANIFEST__;
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await cache.addAll(SHELL);
-    const response = await fetch('/index.html');
-    const html = await response.text();
-    await cache.put('/index.html', new Response(html, { headers: { 'Content-Type': 'text/html' } }));
-    const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map(match => match[1]);
-    await cache.addAll(assets);
   })());
 });
 
@@ -29,7 +24,7 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).then(response => {
       const copy = response.clone();
-      caches.open(CACHE).then(cache => cache.put('/index.html', copy));
+      if (response.ok) caches.open(CACHE).then(cache => cache.put('/index.html', copy));
       return response;
     }).catch(async () => (await caches.match('/index.html')) || (await caches.match('/offline.html'))));
     return;

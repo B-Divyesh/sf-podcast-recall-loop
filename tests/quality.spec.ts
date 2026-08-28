@@ -92,17 +92,49 @@ test('@claim:existing-license a returned license is stored, stripped, and verifi
   await expect(page).toHaveURL('/app');
   await expect(page.getByText('Unlimited clips active.')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBe('test-license');
+  for (let index = 1; index <= 9; index += 1) await saveClip(page, `Unlimited clip ${index}?`);
+  await expect(page.getByText('9 saved clips.')).toBeVisible();
   await page.reload();
   await expect(page.getByText('Unlimited clips active.')).toBeVisible();
   expect(verificationRequests).toBe(1);
 });
 
-test('unavailable checkout is not advertised or linked', async ({ page }) => {
-  for (const route of ['/', '/app', '/privacy', '/terms']) {
-    await page.goto(route);
-    await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
-    await expect(page.getByText(/buy unlimited|\$9 once/i)).toHaveCount(0);
-  }
+test('@claim:one-time-unlimited @claim:sociobot-billing the $9 purchase opens Sociobot checkout', async ({ page }) => {
+  let checkoutStarted = false;
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout', route => {
+    checkoutStarted = true;
+    return route.fulfill({ contentType: 'text/html', body: '<title>Secure checkout</title><h1>Secure checkout</h1>' });
+  });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Unlimited clips for $9 once' })).toBeVisible();
+  const buy = page.getByRole('link', { name: 'Buy unlimited — $9 once' });
+  await expect(buy).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout');
+  await expect(page.locator('a[href*="dodopayments.com"]')).toHaveCount(0);
+  await buy.click();
+  await expect(page).toHaveTitle('Secure checkout');
+  expect(checkoutStarted).toBe(true);
+});
+
+test('@claim:license-restore a pasted license is verified with an announced recovery message', async ({ page }) => {
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=restored-license', route => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
+  }));
+  await page.goto('/');
+  await page.getByText('Have a license?').click();
+  await page.getByLabel('License token').fill('restored-license');
+  await page.getByRole('button', { name: 'Verify license' }).click();
+  await expect(page.locator('#license-status')).toHaveText('License verified. Unlimited clips are active.');
+  expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBe('restored-license');
+});
+
+test('a revoked returned license quietly restores the free limit', async ({ page }) => {
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=revoked-license', route => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'revoked', expires_at: null })
+  }));
+  await page.goto('/app?license=revoked-license');
+  await expect(page).toHaveURL('/app');
+  await expect(page.getByText('Your saved license is no longer active.')).toBeVisible();
+  await expect(page.getByText('8 of 8 free clip spaces remain.')).toBeVisible();
 });
 
 test('demo has no dead fictional episode links', async ({ page }) => {
@@ -118,3 +150,13 @@ test('footer uses the valid canonical factory hostname', async ({ page, request 
   const response = await request.get('https://sociobot.in/');
   expect(response.ok()).toBe(true);
 });
+
+async function saveClip(page: import('@playwright/test').Page, question: string): Promise<void> {
+  await page.getByLabel('Podcast name').fill('The Useful Hour');
+  await page.getByLabel('Episode title').fill('A durable idea');
+  await page.getByLabel('Timestamp').fill('12:34');
+  await page.getByLabel('Your recall question').fill(question);
+  await page.getByLabel('Your takeaway').fill('A clear takeaway written by the listener.');
+  await page.getByRole('button', { name: 'Save recall question' }).click();
+  await expect(page.getByText(question, { exact: true }).first()).toBeVisible();
+}

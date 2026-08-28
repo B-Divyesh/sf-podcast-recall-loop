@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { sampleClips } from '../../src/sample';
+import { renderServiceWorker } from '../../scripts/finalize-build.mjs';
 
 describe('release regressions', () => {
   test('sample clips never expose fictional dead links', () => {
@@ -17,12 +18,34 @@ describe('release regressions', () => {
     expect(manifest.headers['Cache-Control']).toContain('must-revalidate');
   });
 
-  test('the service worker discovers fingerprinted build assets', () => {
+  test('the service worker is stamped from fingerprinted build assets', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
     const vite = readFileSync('vite.config.ts', 'utf8');
     expect(worker).not.toContain('/assets/app-v1.js');
     expect(worker).not.toContain('/assets/app-v1.css');
+    expect(worker).toContain('__BUILD_ID__');
+    expect(worker).toContain('__PRECACHE_MANIFEST__');
     expect(vite).toContain("entryFileNames: 'assets/[name]-[hash].js'");
+  });
+
+  test('@claim:build-coupled-updates an app-only build change creates a new worker and cache', () => {
+    const template = readFileSync('public/sw.js', 'utf8');
+    const oldWorker = renderServiceWorker(template, '<script src="/assets/index-old.js"></script>');
+    const newWorker = renderServiceWorker(template, '<script src="/assets/index-new.js"></script>');
+    expect(newWorker).not.toBe(oldWorker);
+    expect(oldWorker).toContain('/assets/index-old.js');
+    expect(newWorker).toContain('/assets/index-new.js');
+    expect(newWorker).not.toContain('__BUILD_ID__');
+    expect(newWorker).not.toContain('__PRECACHE_MANIFEST__');
+  });
+
+  test('known routes rewrite to the app while unknown routes keep HTTP 404', () => {
+    const config = JSON.parse(readFileSync('public/staticwebapp.config.json', 'utf8'));
+    expect(config.navigationFallback).toBeUndefined();
+    expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html' });
+    for (const route of ['/app', '/demo', '/privacy', '/terms']) {
+      expect(config.routes).toContainEqual({ route, rewrite: '/index.html' });
+    }
   });
 
   test('the update path claims clients and activates only after user action', () => {
@@ -31,6 +54,7 @@ describe('release regressions', () => {
     expect(worker).toContain("event.data === 'SKIP_WAITING'");
     expect(worker).toContain('self.clients.claim()');
     expect(app).toContain("data-action=\"apply-update\"");
+    expect(app).toContain('registration?.waiting');
     expect(app).toContain("postMessage('SKIP_WAITING')");
   });
 });

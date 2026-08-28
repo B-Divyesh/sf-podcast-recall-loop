@@ -100,8 +100,36 @@
   {
     "id": "existing-license",
     "claim": "An existing valid license removes the eight-clip limit and is checked at most once each day",
-    "where": "privacy and terms pages",
+    "where": "landing price, app limit, privacy and terms pages",
     "test": "npm test -- --grep @claim:existing-license",
-    "sandbox": "fresh /app context with a returned fixture license; mock a valid Sociobot response, assert unlimited state, reload, and assert only one verification request"
+    "sandbox": "fresh /app context with a returned fixture license; mock a valid Sociobot response, save nine clips, reload, and assert only one verification request"
+  },
+  {
+    "id": "one-time-unlimited",
+    "claim": "Unlimited clips cost $9 once through Sociobot checkout",
+    "where": "landing price, app limit, README",
+    "test": "npm test -- --grep @claim:one-time-unlimited",
+    "sandbox": "fresh browser context at /; intercept the exact Sociobot checkout URL, activate the $9 purchase link, and assert checkout navigation starts"
+  },
+  {
+    "id": "license-restore",
+    "claim": "A buyer can paste a valid license to restore unlimited clips on another device",
+    "where": "landing restore form, README",
+    "test": "npm test -- --grep @claim:license-restore",
+    "sandbox": "fresh browser context at /; submit a fixture license, mock the Sociobot verification response, and assert the token is stored with an announced success message"
+  },
+  {
+    "id": "build-coupled-updates",
+    "claim": "Installed copies receive every new app build without a manual cache-version edit",
+    "where": "README",
+    "test": "npm run test:unit -- -t @claim:build-coupled-updates",
+    "sandbox": "render the production worker from two HTML shells whose only difference is the fingerprinted app asset; assert distinct worker bytes, cache names, and precache entries"
+  },
+  {
+    "id": "sociobot-billing",
+    "claim": "Sociobot handles checkout for the one-time license",
+    "where": "landing price, privacy, terms, README",
+    "test": "npm test -- --grep @claim:sociobot-billing",
+    "sandbox": "fresh browser context at /; assert the purchase uses the Sociobot product endpoint and no payment-provider link is embedded"
   }
 ]
