@@ -5,10 +5,6 @@ const VERDICT_KEY = `${KEY}:verdict`;
 
 interface Verdict { valid: boolean; checkedAt: number }
 
-export function buyUrl(): string {
-  return `${API}/products/${SLUG}/checkout`;
-}
-
 export function acceptLicenseFromUrl(): void {
   const url = new URL(location.href);
   const token = url.searchParams.get('license');
@@ -45,10 +41,4 @@ export async function verifyLicense(force = false): Promise<boolean> {
   } catch {
     return cachedUnlocked();
   }
-}
-
-export async function restoreLicense(token: string): Promise<boolean> {
-  localStorage.setItem(KEY, token.trim());
-  localStorage.removeItem(VERDICT_KEY);
-  return verifyLicense(true);
 }

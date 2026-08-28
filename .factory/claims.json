@@ -50,9 +50,58 @@
   },
   {
     "id": "local-privacy",
-    "claim": "The demo recall flow sends no note data to another origin",
-    "where": "landing privacy facts, privacy page",
+    "claim": "The demo recall flow sends no note data or tracking requests to another origin",
+    "where": "landing privacy facts, privacy page, README",
     "test": "npm test -- --grep @claim:local-privacy",
     "sandbox": "fresh /demo sample; observe every request while revealing and answering a question and assert all are same-origin"
+  },
+  {
+    "id": "browser-persistence",
+    "claim": "Saved questions stay in this browser after a reload",
+    "where": "landing facts, privacy page, README",
+    "test": "npm test -- --grep @claim:browser-persistence",
+    "sandbox": "fresh /app library; save a question, reload the page, and assert the exact question remains"
+  },
+  {
+    "id": "metadata-only",
+    "claim": "The app stores written podcast metadata and notes, not audio",
+    "where": "landing boundaries, privacy page, README",
+    "test": "npm test -- --grep @claim:metadata-only",
+    "sandbox": "fresh /demo sample; assert there are no audio or video elements, no media requests, and no audio or transcript fields in stored clips"
+  },
+  {
+    "id": "manual-authorship",
+    "claim": "Listeners write their own recall questions and takeaways",
+    "where": "landing preview and boundaries, README",
+    "test": "npm test -- --grep @claim:manual-authorship",
+    "sandbox": "fresh /app library; enter exact question and takeaway text, save, reveal, and assert both strings are unchanged"
+  },
+  {
+    "id": "json-backup",
+    "claim": "A JSON backup exports and restores the complete clip library",
+    "where": "app library toolbar, README",
+    "test": "npm test -- --grep @claim:json-backup",
+    "sandbox": "fresh /demo sample; export five clips, delete one, import the downloaded bytes, and assert all five return"
+  },
+  {
+    "id": "spaced-schedule",
+    "claim": "A recalled question leaves today's queue and remains scheduled after reload",
+    "where": "landing how-it-works, README",
+    "test": "npm test -- --grep @claim:spaced-schedule",
+    "sandbox": "fresh /demo sample; mark one of three due questions remembered, assert two remain, reload, and assert two still remain"
+  },
+  {
+    "id": "installable-pwa",
+    "claim": "The app is installable as a standalone PWA",
+    "where": "README",
+    "test": "npm test -- --grep @claim:installable-pwa",
+    "sandbox": "production preview; assert a standalone manifest is available and the service worker controls /demo after activation"
+  },
+  {
+    "id": "existing-license",
+    "claim": "An existing valid license removes the eight-clip limit and is checked at most once each day",
+    "where": "privacy and terms pages",
+    "test": "npm test -- --grep @claim:existing-license",
+    "sandbox": "fresh /app context with a returned fixture license; mock a valid Sociobot response, assert unlimited state, reload, and assert only one verification request"
   }
 ]

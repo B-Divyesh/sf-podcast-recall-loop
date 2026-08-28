@@ -70,7 +70,7 @@ test('@claim:free-limit the free library accepts eight clips and refuses a ninth
   await expect(page.getByText('8 saved clips.')).toBeVisible();
   await fillClip(page, 'Ninth clip?');
   await page.getByRole('button', { name: 'Save recall question' }).click();
-  await expect(page.getByText('The free library holds eight clips. Export your notes, delete one, or buy unlimited.')).toBeVisible();
+  await expect(page.locator('#clip-status')).toHaveText('The free library holds eight clips. Export your notes or delete one to add another.');
 });
 
 test('@claim:local-privacy the demo recall flow sends no note data to another origin', async ({ page }) => {
@@ -82,6 +82,84 @@ test('@claim:local-privacy the demo recall flow sends no note data to another or
   await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
   await page.getByRole('button', { name: 'I remembered' }).click();
   expect(external).toEqual([]);
+});
+
+test('@claim:browser-persistence saved questions stay in this browser after reload', async ({ page }) => {
+  await page.goto('/app');
+  await saveClip(page, 'What should survive this reload?');
+  await page.reload();
+  await expect(page.getByText('What should survive this reload?', { exact: true }).first()).toBeVisible();
+});
+
+test('@claim:metadata-only the demo stores written metadata and no audio', async ({ page }) => {
+  const mediaRequests: string[] = [];
+  page.on('request', request => {
+    if (request.resourceType() === 'media') mediaRequests.push(request.url());
+  });
+  await page.goto('/demo');
+  await expect(page.locator('audio, video')).toHaveCount(0);
+  const clips = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop-demo');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const state = await new Promise<{ clips: Record<string, unknown>[] }>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    database.close();
+    return state.clips;
+  });
+  expect(clips.every(clip => !('audio' in clip) && !('audioUrl' in clip) && !('transcript' in clip))).toBe(true);
+  expect(mediaRequests).toEqual([]);
+});
+
+test('@claim:manual-authorship questions and takeaways are saved exactly as written', async ({ page }) => {
+  await page.goto('/app');
+  await saveClip(page, 'Which exact question did I write?');
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await expect(page.getByText('A clear takeaway written by the listener.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Which exact question did I write?', { exact: true }).first()).toBeVisible();
+});
+
+test('@claim:json-backup exports and restores the complete clip library', async ({ page }) => {
+  await page.goto('/demo');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export backup' }).click();
+  const content = await readDownload((await downloadPromise).createReadStream());
+  expect(JSON.parse(content).clips).toHaveLength(5);
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: /^Delete question:/ }).first().click();
+  await expect(page.getByText('4 saved clips.')).toBeVisible();
+  await page.locator('#import-file').setInputFiles({
+    name: 'podcast-recall-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(content)
+  });
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+});
+
+test('@claim:spaced-schedule a recalled question leaves today’s queue and stays scheduled', async ({ page }) => {
+  await page.goto('/demo');
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+});
+
+test('@claim:installable-pwa exposes an install manifest and active service worker', async ({ page, request }) => {
+  const manifestResponse = await request.get('/manifest.webmanifest');
+  expect(manifestResponse.ok()).toBe(true);
+  const manifest = await manifestResponse.json();
+  expect(manifest).toMatchObject({ display: 'standalone', name: 'Podcast Recall Loop' });
+  await page.goto('/demo');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
 });
 
 async function fillClip(page: import('@playwright/test').Page, question: string): Promise<void> {

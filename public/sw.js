@@ -1,5 +1,5 @@
-const CACHE = 'recall-loop-shell-v2';
-const SHELL = ['/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/assets/app-v1.js', '/assets/app-v1.css', '/assets/recall-ceramics.webp', '/assets/recall-ceramics-small.webp', '/icon-192.png'];
+const CACHE = 'recall-loop-shell-v3';
+const SHELL = ['/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/assets/recall-ceramics.webp', '/assets/recall-ceramics-small.webp', '/icon-192.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

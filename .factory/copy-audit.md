@@ -15,8 +15,7 @@ Audited 28 August 2026. Counts treat hyphenated terms and prices as one word. No
 | Start with your RSS feed | 5 | Pass |
 | Notes stay in this browser. | 5 | Pass |
 | Reviews work offline after your first visit. | 7 | Pass |
-| Free for eight clips. | 4 | Pass |
-| Unlimited is $9 once. | 4 | Pass |
+| The free library holds eight clips. | 6 | Pass |
 | Capture. | 1 | Pass |
 | Ask. | 1 | Pass |
 | Recall. | 1 | Pass |
@@ -47,17 +46,9 @@ Read-aloud check: the headline, situation sentence, action, outcome, and three f
 | Small on purpose | 3 | Pass |
 | Your audio stays where it is | 6 | Pass |
 | The app reads podcast titles from the RSS feed you request. | 11 | Pass |
-| It does not copy or host audio. | 7 | Pass |
-| There is no transcription, generated quiz, account, analytics, or social feed. | 11 | Pass |
-| Keep the loop small, or keep going | 7 | Pass |
-| Eight clips free. | 3 | Pass |
-| Unlimited for $9. | 3 | Pass |
-| The one-time license removes the clip limit. | 7 | Pass |
-| Reviews, exports, and accessibility stay free. | 6 | Pass |
-| Buy unlimited — $9 once | 4 | Pass |
-| Restore a license | 3 | Pass |
-| Sociobot is the merchant of record. | 6 | Pass |
-| Refunds are handled there. | 4 | Pass |
+| It stores written notes, not audio. | 6 | Pass |
+| You write every question and takeaway. | 6 | Pass |
+| The app has no account or tracking. | 7 | Pass |
 
 ## Terminology
 

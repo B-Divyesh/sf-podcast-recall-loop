@@ -1,6 +1,6 @@
 import './styles.css';
 import { dueClips, formatTimestamp, loadState, parseTimestamp, resetDemo, saveState, scheduleClip, toCsv, toMarkdown } from './data';
-import { acceptLicenseFromUrl, buyUrl, cachedUnlocked, restoreLicense, verifyLicense } from './license';
+import { acceptLicenseFromUrl, cachedUnlocked, verifyLicense } from './license';
 import type { AppState, Clip, Episode } from './types';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -32,7 +32,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://www.sociobot.in" target="_blank" rel="noreferrer">Built by Param Factory <span class="sr-only">(opens in a new tab)</span></a></nav><p>Version 1.0.0 · Generated art disclosed in the design notes.</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" target="_blank" rel="noreferrer">Built by Param Factory <span class="sr-only">(opens in a new tab)</span></a></nav><p>Version 1.0.1 · Generated art disclosed in the design notes.</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -45,7 +45,7 @@ function landing(): string {
         <p class="lede">For curious listeners who save good moments but forget the ideas.</p>
         <div class="hero-actions"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads five podcast clips. No setup.</span></div>
         <a class="quiet-link" href="/app" data-link>Start with your RSS feed →</a>
-        <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>Free for eight clips. Unlimited is $9 once.</li></ul>
+        <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
       </div>
       <figure class="hero-art"><picture><source media="(max-width: 600px)" srcset="/assets/recall-ceramics-small.webp"><img src="/assets/recall-ceramics.webp" width="1100" height="733" alt="Three porcelain pieces arranged in a quiet recall loop." decoding="async" fetchpriority="high"></picture><figcaption>Capture. Ask. Recall.</figcaption></figure>
     </section>
@@ -54,8 +54,7 @@ function landing(): string {
       <article class="prompt-card preview-card"><p class="timestamp">12:34 · Why retrieval beats rereading</p><h3>Why does retrieving an idea strengthen memory?</h3><div class="answer-rule" aria-hidden="true"></div><p class="muted">Reveal your takeaway when you have answered.</p></article>
     </section>
     <section class="steps" aria-labelledby="steps-title"><h2 id="steps-title">How it works</h2><ol><li><span>01</span><h3>Choose a moment</h3><p>Paste an RSS feed and pick the episode. Add the timestamp yourself.</p></li><li><span>02</span><h3>Write one question</h3><p>Record the takeaway in your own words. No transcript is needed.</p></li><li><span>03</span><h3>Recall three ideas</h3><p>Answer from memory. The next date changes with your result.</p></li></ol></section>
-    <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">Small on purpose</p><h2 id="boundaries-title">Your audio stays where it is</h2></div><div><p>The app reads podcast titles from the RSS feed you request. It does not copy or host audio.</p><p>There is no transcription, generated quiz, account, analytics, or social feed.</p></div></section>
-    <section class="price" aria-labelledby="price-title"><div><p class="eyebrow">Keep the loop small, or keep going</p><h2 id="price-title">Eight clips free. Unlimited for $9.</h2><p>The one-time license removes the clip limit. Reviews, exports, and accessibility stay free.</p></div><div class="price-actions"><a class="button primary" href="${buyUrl()}">Buy unlimited — $9 once</a><button class="button secondary" data-action="show-license">Restore a license</button><form id="license-form" class="license-form" hidden><label for="license-token">License token</label><div class="inline-form"><input id="license-token" name="token" autocomplete="off" required><button>Verify license</button></div><p id="license-status" class="form-status" aria-live="polite"></p></form><p class="fine">Sociobot is the merchant of record. Refunds are handled there.</p></div></section>`);
+    <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">Small on purpose</p><h2 id="boundaries-title">Your audio stays where it is</h2></div><div><p>The app reads podcast titles from the RSS feed you request. It stores written notes, not audio.</p><p>You write every question and takeaway. The app has no account or tracking.</p></div></section>`);
 }
 
 function reviewMarkup(): string {
@@ -83,15 +82,15 @@ function appPage(): string {
       <form id="clip-form" class="clip-form"><div class="form-grid"><label>Podcast name<input name="podcast" required maxlength="100" autocomplete="off"></label><label>Episode title<input name="episode" required maxlength="160" autocomplete="off"></label><label>Timestamp<input name="timestamp" required inputmode="numeric" placeholder="12:34" pattern="([0-9]+:)?[0-5]?[0-9]:[0-5][0-9]" aria-describedby="timestamp-help"><span id="timestamp-help" class="field-help">Use minutes:seconds or hours:minutes:seconds.</span></label><label>Episode link <span class="optional">optional</span><input name="episodeUrl" type="url" autocomplete="url"></label></div><label>Your recall question<textarea name="prompt" required maxlength="240" rows="3"></textarea></label><label>Your takeaway<textarea name="takeaway" required maxlength="500" rows="4"></textarea></label><p id="clip-status" class="form-status" aria-live="polite"></p><button class="button primary" type="submit">Save recall question</button></form>
     </section>
     <section class="library" aria-labelledby="library-title"><div class="section-heading"><div><p class="eyebrow">Your library</p><h2 id="library-title">Saved recall questions</h2></div><div class="export-actions"><button data-action="export-md">Export Markdown</button><button data-action="export-csv">Export CSV</button><button data-action="export-json">Export backup</button><label class="file-button">Import backup<input id="import-file" type="file" accept="application/json,.json"></label></div></div>${libraryMarkup()}</section>
-    ${!unlocked ? `<aside class="limit-note"><p><strong>Need more than eight clips?</strong> A $9 one-time license removes the limit.</p><a href="${buyUrl()}">Buy unlimited</a></aside>` : ''}`);
+    ${!unlocked ? `<aside class="limit-note"><p><strong>The free library holds eight clips.</strong> Export your notes or delete one to add another.</p></aside>` : ''}`);
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates live in IndexedDB. We do not receive them.</p><h2>When the app uses the network</h2><p>The app requests an RSS URL only after you choose Find episodes. A license check sends the token to Sociobot at most once each day.</p><h2>Demo data</h2><p>The demo uses a separate browser database. Resetting the demo deletes that database.</p><h2>Payment</h2><p>Sociobot is the merchant of record. Its checkout handles payment details. This app stores only your license token.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 28 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates live in IndexedDB. We do not receive them.</p><h2>When the app uses the network</h2><p>The app requests an RSS URL only after you choose Find episodes. If you already have a license, its token is checked with Sociobot once each day.</p><h2>Demo data</h2><p>The demo uses a separate browser database. Resetting the demo deletes that database.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 28 August 2026.</p></article>`);
 }
 
 function terms(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Terms for using the recall loop</h1><p class="lede">Use the app for your own lawful podcast notes.</p><h2>Your content</h2><p>You keep ownership of every question and takeaway you write. You are responsible for your notes and backups.</p><h2>Podcast data</h2><p>The app reads public RSS metadata you request. It does not grant rights to podcast audio or publisher material.</p><h2>One-time license</h2><p>A valid $9 license removes the eight-clip limit. Sociobot handles checkout, refunds, and license revocation.</p><h2>No warranty</h2><p>The software is provided as is under the MIT License. Keep an exported backup of important notes.</p><h2>Changes</h2><p>Material changes will be dated on this page. Continued use means you accept the current terms.</p><p>Last updated: 28 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Terms for using the recall loop</h1><p class="lede">Use the app for your own lawful podcast notes.</p><h2>Your content</h2><p>You keep ownership of every question and takeaway you write. You are responsible for your notes and backups.</p><h2>Podcast data</h2><p>The app reads public RSS metadata you request. It does not grant rights to podcast audio or publisher material.</p><h2>Existing licenses</h2><p>A valid license removes the eight-clip limit. Sociobot handles license verification and revocation.</p><h2>No warranty</h2><p>The software is provided as is under the MIT License. Keep an exported backup of important notes.</p><h2>Changes</h2><p>Material changes will be dated on this page. Continued use means you accept the current terms.</p><p>Last updated: 28 August 2026.</p></article>`);
 }
 
 function notFound(): string {
@@ -115,7 +114,7 @@ async function render(announce = true): Promise<void> {
   if (announce) {
     const heading = document.querySelector<HTMLHeadingElement>('h1');
     routeStatus.textContent = heading?.textContent || '';
-    requestAnimationFrame(() => heading?.focus({ preventScroll: true }));
+    heading?.focus({ preventScroll: true });
   }
 }
 
@@ -186,7 +185,7 @@ function bindForms(): void {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
     const status = form.querySelector<HTMLParagraphElement>('#clip-status')!;
-    if (!cachedUnlocked() && state.clips.length >= 8) { status.textContent = 'The free library holds eight clips. Export your notes, delete one, or buy unlimited.'; return; }
+    if (!cachedUnlocked() && state.clips.length >= 8) { status.textContent = 'The free library holds eight clips. Export your notes or delete one to add another.'; return; }
     const data = new FormData(form);
     const seconds = parseTimestamp(String(data.get('timestamp') || ''));
     if (seconds === null) { status.textContent = 'The timestamp format is not valid. Use 12:34 or 1:12:34.'; return; }
@@ -197,12 +196,6 @@ function bindForms(): void {
     };
     if (!clip.podcast || !clip.episode || !clip.prompt || !clip.takeaway) { status.textContent = 'Complete every required field, then save again.'; return; }
     state.clips.push(clip); await saveState(demo, state); form.reset(); revealedId = ''; await render(false); showToast('Recall question saved. It is due now.');
-  });
-
-  document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', async event => {
-    event.preventDefault(); const form = event.currentTarget as HTMLFormElement; const status = form.querySelector<HTMLParagraphElement>('#license-status')!; status.textContent = 'Checking the license…';
-    const valid = await restoreLicense(String(new FormData(form).get('token') || '')); status.textContent = valid ? 'License verified. Unlimited clips are active.' : 'That license is not active. Check the token and try again.';
-    if (valid) window.setTimeout(() => render(false), 700);
   });
 
   document.querySelector<HTMLInputElement>('#import-file')?.addEventListener('change', async event => {
@@ -233,7 +226,6 @@ document.addEventListener('click', async event => {
   if (action === 'export-csv') download('podcast-recall-clips.csv', 'text/csv', toCsv(state.clips));
   if (action === 'export-md') download('podcast-recall-clips.md', 'text/markdown', toMarkdown(state.clips));
   if (action === 'export-json') download('podcast-recall-backup.json', 'application/json', JSON.stringify(state, null, 2));
-  if (action === 'show-license') { const form = document.querySelector<HTMLFormElement>('#license-form'); if (form) { form.hidden = false; form.querySelector<HTMLInputElement>('input')?.focus(); } }
   if (action === 'reset-demo') { await resetDemo(); state = await loadState(true); revealedId = ''; await render(false); showToast('Demo reset to five sample clips.'); }
   if (action === 'apply-update') { navigator.serviceWorker.controller?.postMessage('SKIP_WAITING'); location.reload(); }
 });

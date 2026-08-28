@@ -4,7 +4,7 @@ Turn podcast moments into three daily recall questions.
 
 Podcast Recall Loop is for self-learners who want recall without a larger note system. Paste a podcast RSS feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
 
-The app stores notes in IndexedDB. It does not store audio or send notes to a server. The demo at `/demo` uses a separate database and never enters the real note library.
+The app stores written notes in IndexedDB. It stores no audio. The demo at `/demo` uses a separate database and never enters the real note library.
 
 ## What v1 includes
 
@@ -13,9 +13,8 @@ The app stores notes in IndexedDB. It does not store audio or send notes to a se
 - A three-question due queue with simple spaced scheduling
 - Markdown, CSV, and JSON backup exports
 - JSON backup import
-- An installable service worker and offline review after the first visit
+- An installable PWA and offline review after the first visit
 - A free eight-clip library
-- A $9 one-time Sociobot license for unlimited clips
 
 ## Try the isolated demo
 
@@ -36,10 +35,11 @@ Vite serves the development site at `http://localhost:4173`.
 
 ```sh
 npm test
+npm run test:unit
 npm run build
 ```
 
-The Playwright suite checks every claim, the offline reload, keyboard use, mobile width, route structure, and serious accessibility findings. The production command writes `index.html` and static assets to `dist/`.
+The Playwright suite checks every claim, offline reload, keyboard use, mobile width, route structure, and serious accessibility findings. Vitest covers data and release configuration. The production command writes `index.html` and fingerprinted static assets to `dist/`.
 
 Run one claim with its command from [.factory/claims.json](.factory/claims.json):
 
@@ -51,9 +51,9 @@ npm test -- --grep @claim:csv-export
 
 Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` provides SPA fallback and security headers for Azure Static Web Apps. The factory owns DNS and deployment.
 
-## Privacy and payments
+## Privacy
 
-The privacy policy is at `/privacy`; terms are at `/terms`. RSS URLs are requested only when the listener presses **Find episodes**. Paid checkout and daily license verification use the Sociobot billing API. No product ID or payment-provider code is embedded.
+The privacy policy is at `/privacy`; terms are at `/terms`. RSS URLs are requested only when the listener presses **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
 
 ## Project notes
 

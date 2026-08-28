@@ -43,12 +43,41 @@ test('reset demo restores its five original clips', async ({ page }) => {
   await expect(page.getByText('3', { exact: true }).first()).toBeVisible();
 });
 
-test('a returned license is stored, stripped from the URL, and verified', async ({ page }) => {
+test('@claim:existing-license a returned license is stored, stripped, and verified once per day', async ({ page }) => {
+  let verificationRequests = 0;
   await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=test-license', route => route.fulfill({
     contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
   }));
+  page.on('request', request => {
+    if (request.url().includes('/products/podcast-recall-loop/verify?license=')) verificationRequests += 1;
+  });
   await page.goto('/app?license=test-license');
   await expect(page).toHaveURL('/app');
   await expect(page.getByText('Unlimited clips active.')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBe('test-license');
+  await page.reload();
+  await expect(page.getByText('Unlimited clips active.')).toBeVisible();
+  expect(verificationRequests).toBe(1);
+});
+
+test('unavailable checkout is not advertised or linked', async ({ page }) => {
+  for (const route of ['/', '/app', '/privacy', '/terms']) {
+    await page.goto(route);
+    await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
+    await expect(page.getByText(/buy unlimited|\$9 once/i)).toHaveCount(0);
+  }
+});
+
+test('demo has no dead fictional episode links', async ({ page }) => {
+  await page.goto('/demo');
+  await expect(page.getByRole('link', { name: /Open episode/ })).toHaveCount(0);
+  await expect(page.locator('a[href*="example.com/episodes"]')).toHaveCount(0);
+});
+
+test('footer uses the valid canonical factory hostname', async ({ page, request }) => {
+  await page.goto('/');
+  const link = page.getByRole('link', { name: /Built by Param Factory/ });
+  await expect(link).toHaveAttribute('href', 'https://sociobot.in/');
+  const response = await request.get('https://sociobot.in/');
+  expect(response.ok()).toBe(true);
 });

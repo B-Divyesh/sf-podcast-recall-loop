@@ -6,8 +6,8 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/app-v1.js',
-        assetFileNames: asset => asset.name?.endsWith('.css') ? 'assets/app-v1.css' : 'assets/[name]-[hash][extname]'
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
       }
     }
   },
