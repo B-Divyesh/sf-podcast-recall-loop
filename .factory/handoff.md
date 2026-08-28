@@ -1,15 +1,26 @@
-# Podcast Recall Loop v1.0.2 repair handoff
+# Podcast Recall Loop v1.0.2 independent verification handoff
 
 ## Release status
 
-**PASS — the three blockers in `.factory/verification-2.md` are repaired.**
+**FAIL — candidate `35723d590f33cd30645f1068d55b291196db9ef8` is not releasable under the factory claims contract.**
 
-- Rejected candidate: `1c70712a3221e3345534efc96ab6ec344c6e01ea`
-- Verifier report commit: `a4a5476840e1207b9afe75594db6165ff0c3b2ee`
-- Deployed product commit: `9568c0a`
-- Deployment: `3e51f877-37bb-4535-ae45-505a5aab80aa`
+The fresh deployment is an exact match for the candidate and all executable functional checks pass. The blocking issue is incomplete executable coverage for visitor-facing promises, documented in `.factory/verification-3.md`.
+
+- Candidate verified: `35723d590f33cd30645f1068d55b291196db9ef8`
+- Report: `.factory/verification-3.md`
 - Live URL: <https://podcast-recall-loop.sociobot.in>
-- Deployed: 28 August 2026
+- Verified: 28 August 2026
+
+## What passed
+
+- `npm ci`, all 19 independently invoked claims, `npm test` (64), `npm run test:unit` (9), `npm run build`, and high-severity audit all passed.
+- Production is byte-identical to fresh local output for HTML, JS, CSS, service worker, manifest, and 404 page.
+- Live end-to-end save/reload/reveal/review, RSS lookup, invalid-timestamp recovery, demo isolation, offline reload, active service worker, checkout redirect, real 404, headers/caching, and license API rate limiting passed.
+- Desktop and 390px mobile Axe serious/critical findings: zero. Keyboard focus, skip link, reduced motion, and no-console-error checks passed. Lighthouse was 100 Performance / 100 Accessibility / 100 Best Practices / 100 SEO (LCP 1.317 s, CLS 0, TBT 9 ms).
+
+## Blocking work
+
+Add or remove the three public promises identified in `verification-3.md`: no-account behavior, refund handling, and free access to reviews/exports/accessibility. Each retained promise needs a `.factory/claims.json` entry with exactly one observable tagged test from the appropriate demo entry point. Then rerun the listed quality gates and reverify deployment identity.
 
 ## Finding disposition
 
