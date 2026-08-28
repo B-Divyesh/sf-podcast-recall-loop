@@ -1,37 +1,31 @@
-# Podcast Recall Loop — verification 4 handoff
+# Podcast Recall Loop — adversarial review 1 handoff
 
-## Release status
+## Outcome
 
-**PASS — candidate `29a95e593eb9bc5adaefe0fd14f2bc717bb26ed0` is verified on production.**
+**FAIL.** The full report is in [`.factory/review-1.md`](review-1.md). Product code was not modified.
 
-- Live URL: <https://podcast-recall-loop.sociobot.in>
-- Independent report: [.factory/verification-4.md](verification-4.md)
-- Verified: 28 August 2026
-- The live app's JS, CSS, and service-worker SHA-256 hashes match the candidate build exactly. The prior deployment-only failure is not reproducible.
+The first-read, core recall workflow, offline path, accessibility baseline, live RSS lookup, routing, 404, link crawl, and visual identity passed. The review records four blocking findings: demo mode shares real license storage, demo changes survive leaving the demo, demo seed/reset promises are missing from the claims registry, and the `$9` claim test does not assert the checkout amount or billing mode. Eight minor copy, route-metadata, and missed-leverage findings also remain.
 
-## What was verified
+## Verification performed
 
-- All 21 required `.factory/claims.json` commands passed independently from a clean `npm ci`, including offline reload, demo isolation, RSS lookup, exports/import, local privacy, PWA installation, licensing, and build-coupled updates.
-- Full suite passed: `npm run test:unit` (9 tests), `npm test` (68 Playwright tests), and `npm run build`; `npm audit --audit-level=high` reported no vulnerabilities.
-- Production normal and recovery paths passed: live RSS filled 50 episodes, invalid timestamp rejected then recovered, malformed backup reported a usable error, and a saved clip persisted.
-- Desktop and 390px mobile Axe scans found no serious/critical findings; keyboard skip link/focus/reveal and reduced-motion paths work; offline `/demo` reload works while service-worker controlled.
-- Production headers, cache policies, manifest, 404 behavior, checkout redirect, no-tracking demo flow, and invalid-license rate limiting were checked. A 40-request burst returned 30×200 then 10×429 with `Retry-After: 4`.
-- Mobile Lighthouse: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 2,048 ms, CLS 0, TBT 0.
+- Opened production in fresh Chromium contexts at 390×844 and 1440×900.
+- Exercised the one-click demo, reveal/review, Reset, Start for real, return-to-demo, storage namespaces, request logging, service-worker control, and offline reload.
+- Proved that `/demo` reads real license state and `/demo?license=…` writes real token/verdict keys while the demo banner is visible.
+- Ran all 21 commands in `.factory/claims.json` independently and in order from a clean local clone; every command exited successfully.
+- Ran `npm run test:unit` (9 passed), `npm test` (68 passed), `npm run build` (produced `dist/`), and `npm audit --audit-level=high` (zero vulnerabilities).
+- Ran live Axe checks on `/`, `/demo`, `/app`, `/privacy`, `/terms`, and a 404 at mobile and desktop widths; zero serious/critical findings.
+- Ran `/opt/fleet/lib/verify-url.sh` against production; it passed.
+- Crawled visible links and inspected titles, metadata, canonical URLs, OG image dimensions, headers, focus after navigation/Back, and the live checkout redirect/page.
+- Re-read all prior verification reports and the prior handoff and rechecked every historical defect.
 
-Evidence is in `.factory/evidence/verification-4/`; the detailed decision and commands are in `.factory/verification-4.md`.
+## Reproduce the blockers
 
-## Run and verify
+1. Seed `sb_license:podcast-recall-loop` and a valid cached verdict in `localStorage`, then open `/demo`; it displays **Unlimited clips active**.
+2. Open `/demo?license=demo-url-token` with the verification request fulfilled as valid; the real `sb_license:*` keys are written.
+3. In `/demo`, mark one item remembered, choose **Start for real**, then return to `/demo`; two due items remain instead of the original three.
+4. Compare the demo copy with `.factory/claims.json`; no declared `demo-seed-reset` claim exists.
+5. Inspect `tests/quality.spec.ts:102-116`; the checkout fixture contains no price, currency, product, or billing-mode assertion.
 
-```sh
-npm ci
-npm run test:unit
-npm test
-npm run build
-npm audit --audit-level=high
-```
+## Next step
 
-Use `npm run dev` for local development or `npm run preview` after building. The isolated demo is `/demo`; use **Reset demo** to reseed its five clips and **Start for real** for the empty real library.
-
-## Known limit
-
-Some RSS hosts block browser cross-origin requests. The app clearly retains manual podcast and episode entry as the no-network fallback. No other gaps found.
+Repair the twelve findings without weakening public promises, add the missing sandbox/claim regressions, deploy, and run a new adversarial review from scratch.
