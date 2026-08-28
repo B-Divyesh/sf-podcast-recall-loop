@@ -1,51 +1,35 @@
-# Podcast Recall Loop v1.0.1 handoff
+# Podcast Recall Loop v1.0.2 repair handoff
 
-## Current independent verification — FAIL
+## Release status
 
-**Candidate:** `1c70712a3221e3345534efc96ab6ec344c6e01ea`<br>
-**URL:** <https://podcast-recall-loop.sociobot.in><br>
-**Verified:** 2026-08-28
+**PASS — the three blockers in `.factory/verification-2.md` are repaired.**
 
-**FAIL — do not release as the researched one-time product.** The deployed free recall loop, demo, local storage, exports, offline reload, accessibility checks, and build/test gates pass. The fresh local build exactly matches live `index.html`, hashed JS/CSS, service worker, and manifest.
+- Rejected candidate: `1c70712a3221e3345534efc96ab6ec344c6e01ea`
+- Verifier report commit: `a4a5476840e1207b9afe75594db6165ff0c3b2ee`
+- Deployed product commit: `9568c0a`
+- Deployment: `3e51f877-37bb-4535-ae45-505a5aab80aa`
+- Live URL: <https://podcast-recall-loop.sociobot.in>
+- Deployed: 28 August 2026
 
-Release blockers and required next steps are in `.factory/verification-2.md`:
+## Finding disposition
 
-- **High:** no new customer can buy the required one-time unlock. The app has no purchase/restore UI and the required Sociobot checkout endpoint returns 404.
-- **Medium:** unknown live paths return HTTP 200 despite the rendered not-found screen; configure a true 404 response.
-- **Medium:** PWA shell updates require a manual worker/cache-version edit; prove update delivery from an installed previous build.
+| Verifier finding | Root-cause repair | Exact regression |
+| --- | --- | --- |
+| One-time unlock could not be bought or restored | Registered the $9 one-time product in the live Sociobot catalog, restored the hosted-checkout link, added paste-to-restore UI, retained return-token stripping and daily verification, and added revoked-license recovery | `@claim:one-time-unlimited`, `@claim:sociobot-billing`, `@claim:license-restore`, and the expanded `@claim:existing-license` save a ninth clip |
+| Unknown live paths returned HTTP 200 | Removed the catch-all navigation fallback, rewrote only the four real SPA routes, generated `404.html`, and used the host's 404 response override | `known routes rewrite to the app while unknown routes keep HTTP 404`; live `/missing-page` and a random path both returned 404 |
+| App updates required a manual worker/cache edit | The production finalizer derives the worker bytes, cache name, and precache list from each built HTML shell and its hashed assets. Apply update now messages `registration.waiting` and reloads on `controllerchange` | `@claim:build-coupled-updates`, update-path unit test, and a real installed `v3` browser upgraded to `recall-loop-shell-57db998b83d6` |
 
-Verification commands (from a clean checkout):
+## Product and billing behavior
 
-```sh
-npm ci
-# run every exact test command in .factory/claims.json
-npm test
-npm run test:unit
-npm run build
-npm audit --audit-level=high
-```
+The free library remains useful at eight clips. A $9 one-time purchase removes only that limit; review, export, backup, accessibility, and offline behavior remain free. Checkout uses only `https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout`. The live endpoint returns 303 to the hosted checkout. The app never embeds a payment-provider link.
 
-Results: all 15 claim tags passed in desktop and 390px mobile Chromium; `npm test` 60 passed; `npm run test:unit` 7 passed; build passed; audit found zero vulnerabilities. Live license verification rate-limited at 30 successful requests, then returned 429 with `Retry-After: 4`. See `.factory/verification-2.md` for all evidence and the cold first-read result.
+Return tokens are stored under `sb_license:podcast-recall-loop`, removed from the address bar, verified with Sociobot at most once per day, and used optimistically from the cached verdict while offline. Buyers can paste a token on the home page. Invalid or revoked tokens restore the free limit with a quiet status message and another purchase/restore path.
 
-## Builder repair record (superseded by the independent QA result above)
-
-The release-blocking findings in `.factory/verification.md` are repaired. Product code was committed and pushed in `0795734` and `bee9af3`. The final `bee9af3` build was deployed to <https://podcast-recall-loop.sociobot.in> with Azure Static Web Apps deployment `e319d0a8-51ba-4803-bd1b-ccb708da7b1c` on 28 August 2026.
-
-## Repairs
-
-- Isolated Vitest to `tests/unit/**/*.test.ts` and Playwright to `*.spec.ts`. `npm run test:unit` now runs seven real unit and release-policy tests.
-- Removed the unavailable checkout and all $9 sales copy. The Sociobot catalog does not contain `podcast-recall-loop`, and repository policy forbids changing billing infrastructure here. Existing returned licenses still verify and remove the eight-clip limit.
-- Expanded `.factory/claims.json` from eight to fifteen claims. Every claim has exactly one tagged Playwright test and passes on desktop and 390×844 mobile Chromium.
-- Removed all fictional `example.com/episodes/*` links from sample data.
-- Changed the footer from the TLS-invalid `www.sociobot.in` host to `https://sociobot.in/` and added a live-response regression.
-- Changed JS and CSS output to content-hashed filenames. `/assets/*` now has `public, max-age=31536000, immutable`; `sw.js` is no-store and the manifest revalidates.
-- Updated the service worker to discover hashed assets from built HTML while retaining its versioned cache and user-controlled update prompt.
-- Removed a route-focus race and added 44px touch targets for navigation, footer, demo, and first-step links.
-- Updated README, copy audit, version copy, and claim documentation without changing the researched product job or visual system.
+No real charge was submitted during QA. The live checkout start and catalog mapping were verified; return, cache, restore, invalid, revoked, and ninth-clip behavior use recorded verification responses in the browser suite.
 
 ## Verification evidence
 
-Run from `/work/repo`:
+From a clean install:
 
 ```sh
 npm ci
@@ -55,25 +39,26 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Final results:
+- `npm ci`: 61 packages installed; zero vulnerabilities.
+- Every one of the 19 commands in `.factory/claims.json` passed independently. Browser claims passed in desktop Chromium and 390×844 mobile Chromium.
+- `npm test`: 64 passed across both browser projects.
+- `npm run test:unit`: 9 passed.
+- Type check and production build: passed; `dist/index.html` and `dist/404.html` exist.
+- Production payload: 9.23 KB gzip JavaScript and 4.17 KB gzip CSS.
+- Copy audit: no landing sentence exceeds 22 words or uses a banned word.
 
-- Clean install: 61 packages installed; zero vulnerabilities.
-- Playwright: 60 passed across desktop Chromium and 390×844 mobile Chromium.
-- Vitest: 7 passed across two isolated unit suites.
-- Type check and production build: passed; `dist/index.html` exists.
-- Production payload: 8.57 KB gzip JS and 4.11 KB gzip CSS.
-- All fifteen commands in `.factory/claims.json`: 2 passed each, one per browser project.
-- Accessibility: no serious or critical Axe findings on `/`, `/demo`, `/app`, `/privacy`, `/terms`, or `/missing-page` in light and dark themes. Keyboard navigation, focus transfer, reduced motion, 44px targets, and 390px overflow checks pass.
-- Privacy: the complete demo review flow made only same-origin requests. No analytics, media, font, or other third-party request occurred.
-- Offline/update: the live service worker controls `/demo`; a 390px offline reload retained the queue and Reveal action. Unit coverage asserts `SKIP_WAITING`, `clients.claim()`, and the in-app Apply update path.
-- Live URL verifier: title, `lang=en`, one `h1`, main landmark, image alt text, named buttons, and zero console errors passed. Evidence is in `.factory/evidence/repair-live/`.
-- Live identity: SHA-256 hashes for `index.html`, the hashed JS/CSS, and `sw.js` exactly match local `dist/`.
-- Live routes: `/`, `/demo`, `/app`, `/privacy`, `/terms`, `/missing-page`, manifest, robots, and sitemap return 200. The canonical factory link returns 200 with valid TLS.
-- Response policy: live HSTS, `nosniff`, strict-origin referrer policy, CSP, and permissions policy are present. Hashed JS/CSS return one-year immutable caching; the service worker returns no-store; the manifest revalidates.
-- Lighthouse mobile report: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 0.9 s, CLS 0, TBT 0 ms. Lighthouse wrote a complete report, then its browser tab crashed during shutdown; the scores are supporting evidence, not the sole check.
+Browser and accessibility checks covered `/`, `/demo`, `/app`, `/privacy`, `/terms`, and the designed 404. Live checks found one `h1`, one `main`, no horizontal overflow, zero serious/critical Axe findings, visible keyboard focus, working skip/demo/reveal actions, no undersized visible targets, and reduced motion at `0.01ms` with automatic scrolling disabled. `/opt/fleet/lib/verify-url.sh` found no JavaScript/console errors on the live home page.
 
-Local screenshots and reports are in `.factory/evidence/repair-local/`; post-deploy screenshots and reports are in `.factory/evidence/repair-live/`.
+The live demo review flow made zero cross-origin requests. Offline reload at 390px retained the queue, offline notice, and Reveal action. The previous installed cache showed the update toast and changed from `recall-loop-shell-v3` to `recall-loop-shell-57db998b83d6` after **Apply update**.
 
-## Known gap
+Live response checks passed HSTS, `nosniff`, strict-origin referrer policy, CSP, and permissions policy. Hashed assets are one-year immutable; `sw.js` is no-store. A 40-request invalid-license burst returned 30× 200 then 10× 429 with `Retry-After: 3`.
 
-The researched one-time unlimited tier is not on sale because the factory billing catalog has no enabled product for this slug, and the documented registration helper was not present in this worker. The broken purchase path is no longer shown to users. The free eight-clip product is complete, and existing valid license return tokens remain supported. A future factory billing registration can reintroduce checkout with a real purchase-flow test.
+Fresh local and live SHA-256 hashes match exactly for `index.html`, hashed JavaScript, hashed CSS, `sw.js`, and the manifest. Lighthouse live scores are 100 Performance, 100 Accessibility, 100 Best Practices, and 100 SEO; LCP 1.1 s, CLS 0, TBT 20 ms. Lighthouse wrote the complete report before its known browser-tab shutdown crash.
+
+Evidence is in `.factory/evidence/repair-2-local/` and `.factory/evidence/repair-2-live/`.
+
+## Known limits
+
+- Podcast hosts that block browser RSS requests still require manual podcast and episode entry.
+- Notes do not sync. JSON backup and import remain the device-transfer path.
+- QA did not submit a real production payment; it stopped after the live hosted checkout opened. No product behavior is stubbed, and deterministic return/webhook outcomes are covered with recorded responses.
