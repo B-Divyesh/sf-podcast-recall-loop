@@ -1,5 +1,11 @@
 # Podcast Recall Loop v1 handoff
 
+> ## Independent verification status — FAIL (2026-08-28)
+>
+> Candidate `571773ed0427f222db7847751cf8b3b54cb44edc` was independently checked at https://podcast-recall-loop.sociobot.in. Do not release it. The live files do match the candidate and all eight mandatory claim commands plus `npm test` pass, but `npm run test:unit` fails, the advertised Sociobot checkout returns HTTP 404, and the site has dead sample/footer links. The full evidence and exact commands are in `.factory/verification.md`.
+>
+> Required next steps: register/enable and test the $9 checkout, repair the Vitest configuration, repair or remove dead links, complete claims coverage, then re-run independent verification.
+
 ## What shipped
 
 - A Vite and TypeScript PWA at `/`, with real routes for `/app`, `/demo`, `/privacy`, `/terms`, and a styled 404.
