@@ -1,6 +1,33 @@
-# Podcast Recall Loop v1.0.1 repair handoff
+# Podcast Recall Loop v1.0.1 handoff
 
-## Release status
+## Current independent verification — FAIL
+
+**Candidate:** `1c70712a3221e3345534efc96ab6ec344c6e01ea`<br>
+**URL:** <https://podcast-recall-loop.sociobot.in><br>
+**Verified:** 2026-08-28
+
+**FAIL — do not release as the researched one-time product.** The deployed free recall loop, demo, local storage, exports, offline reload, accessibility checks, and build/test gates pass. The fresh local build exactly matches live `index.html`, hashed JS/CSS, service worker, and manifest.
+
+Release blockers and required next steps are in `.factory/verification-2.md`:
+
+- **High:** no new customer can buy the required one-time unlock. The app has no purchase/restore UI and the required Sociobot checkout endpoint returns 404.
+- **Medium:** unknown live paths return HTTP 200 despite the rendered not-found screen; configure a true 404 response.
+- **Medium:** PWA shell updates require a manual worker/cache-version edit; prove update delivery from an installed previous build.
+
+Verification commands (from a clean checkout):
+
+```sh
+npm ci
+# run every exact test command in .factory/claims.json
+npm test
+npm run test:unit
+npm run build
+npm audit --audit-level=high
+```
+
+Results: all 15 claim tags passed in desktop and 390px mobile Chromium; `npm test` 60 passed; `npm run test:unit` 7 passed; build passed; audit found zero vulnerabilities. Live license verification rate-limited at 30 successful requests, then returned 429 with `Retry-After: 4`. See `.factory/verification-2.md` for all evidence and the cold first-read result.
+
+## Builder repair record (superseded by the independent QA result above)
 
 The release-blocking findings in `.factory/verification.md` are repaired. Product code was committed and pushed in `0795734` and `bee9af3`. The final `bee9af3` build was deployed to <https://podcast-recall-loop.sociobot.in> with Azure Static Web Apps deployment `e319d0a8-51ba-4803-bd1b-ccb708da7b1c` on 28 August 2026.
 
