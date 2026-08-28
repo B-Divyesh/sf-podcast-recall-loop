@@ -1,0 +1,9 @@
+{
+  "slug": "podcast-recall-loop",
+  "title": "Podcast Recall Loop",
+  "summary": "Turn podcast moments into three daily recall questions.",
+  "artifact_class": "pwa-offline",
+  "user": "Self-learners who listen to educational podcasts and want to retain a handful of ideas.",
+  "smallest_useful_product": "RSS episode lookup, timestamp clips, learner-written prompts, and a three-question daily recall queue.",
+  "monetization": "one-time"
+}
