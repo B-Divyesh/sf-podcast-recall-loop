@@ -1,0 +1,11 @@
+{
+  "categories": {
+    "performance": 100,
+    "accessibility": 100,
+    "best-practices": 100,
+    "seo": 100
+  },
+  "lcpMs": 983,
+  "cls": 0,
+  "tbtMs": 9
+}

@@ -1,0 +1,38 @@
+{
+  "/": {
+    "status": 200,
+    "localSha256": "17df53d71e5e9f7c83320c80d379c2914dbeac6c22d83ceb1f734e62b8f63688",
+    "liveSha256": "17df53d71e5e9f7c83320c80d379c2914dbeac6c22d83ceb1f734e62b8f63688",
+    "match": true
+  },
+  "/404.html": {
+    "status": 200,
+    "localSha256": "17df53d71e5e9f7c83320c80d379c2914dbeac6c22d83ceb1f734e62b8f63688",
+    "liveSha256": "17df53d71e5e9f7c83320c80d379c2914dbeac6c22d83ceb1f734e62b8f63688",
+    "match": true
+  },
+  "/sw.js": {
+    "status": 200,
+    "localSha256": "c5e4d55d72485181bba7f7113deaf4b7ce0fda957f5cf03c58dfc340e691662f",
+    "liveSha256": "c5e4d55d72485181bba7f7113deaf4b7ce0fda957f5cf03c58dfc340e691662f",
+    "match": true
+  },
+  "/manifest.webmanifest": {
+    "status": 200,
+    "localSha256": "ddb62c03a08c126a72cf88baecd1aded25308a2823b4c60c62191d0ad953e05b",
+    "liveSha256": "ddb62c03a08c126a72cf88baecd1aded25308a2823b4c60c62191d0ad953e05b",
+    "match": true
+  },
+  "/assets/index-D1Lbzi8r.js": {
+    "status": 200,
+    "localSha256": "62a2aee45da52196179cb2443a6a5bcb63eb61d909a54e0c9e10f5c27aeb0143",
+    "liveSha256": "62a2aee45da52196179cb2443a6a5bcb63eb61d909a54e0c9e10f5c27aeb0143",
+    "match": true
+  },
+  "/assets/index-DF4MFbTz.css": {
+    "status": 200,
+    "localSha256": "9f7b65ec5a50c8d4d6974b85d1e7fc91a807c75ffc0d1951095800be063e0b0c",
+    "liveSha256": "9f7b65ec5a50c8d4d6974b85d1e7fc91a807c75ffc0d1951095800be063e0b0c",
+    "match": true
+  }
+}

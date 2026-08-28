@@ -1,0 +1,119 @@
+{
+  "results": [
+    {
+      "viewport": "desktop",
+      "route": "/",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/demo",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Demo — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/app",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Recall queue — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/privacy",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Privacy — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/terms",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Terms — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "mobile390",
+      "route": "/",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "mobile390",
+      "route": "/demo",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Demo — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "mobile390",
+      "route": "/app",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Recall queue — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "mobile390",
+      "route": "/privacy",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Privacy — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    },
+    {
+      "viewport": "mobile390",
+      "route": "/terms",
+      "status": 200,
+      "h1": 1,
+      "main": 1,
+      "overflow": false,
+      "title": "Terms — Podcast Recall Loop",
+      "seriousOrCritical": [],
+      "errors": []
+    }
+  ],
+  "offline": {
+    "note": true,
+    "reveal": true,
+    "controlled": true
+  }
+}
