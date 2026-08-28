@@ -11,6 +11,9 @@ let revealedId = '';
 let online = navigator.onLine;
 
 const escapeHtml = (value: string): string => value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]!);
+const safeUrl = (value: string): string => {
+  try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? escapeHtml(url.href) : ''; } catch { return ''; }
+};
 
 function routeTitle(path: string): string {
   if (path === '/demo') return 'Demo — Podcast Recall Loop';
@@ -62,8 +65,8 @@ function reviewMarkup(): string {
   const index = Math.min(3, state.clips.filter(item => item.reviewCount > 0).length + 1);
   return `<section class="review-zone" aria-labelledby="review-title"><div class="review-heading"><div><p class="eyebrow">Question ${index} of up to 3 today</p><h2 id="review-title">Recall before you reveal</h2></div><p>${due.length} due now</p></div>
     <article class="prompt-card active-card" data-clip-id="${escapeHtml(clip.id)}"><p class="timestamp">${formatTimestamp(clip.timestampSec)} · ${escapeHtml(clip.podcast)}</p><h3>${escapeHtml(clip.prompt)}</h3>
-    ${revealedId === clip.id ? `<div class="revealed"><p class="answer-label">Your takeaway</p><p>${escapeHtml(clip.takeaway)}</p></div><div class="review-actions"><button class="button secondary" data-action="review-sooner" data-id="${escapeHtml(clip.id)}">Review sooner</button><button class="button primary" data-action="review-remembered" data-id="${escapeHtml(clip.id)}">I remembered</button></div>` : `<button class="button primary reveal" data-action="reveal" data-id="${escapeHtml(clip.id)}">Reveal my takeaway</button>`}
-    <footer><span>${escapeHtml(clip.episode)}</span>${clip.episodeUrl ? `<a href="${escapeHtml(clip.episodeUrl)}" target="_blank" rel="noreferrer">Open episode <span class="sr-only">(opens in a new tab)</span></a>` : ''}</footer></article></section>`;
+    ${revealedId === clip.id ? `<div class="revealed" tabindex="-1"><p class="answer-label">Your takeaway</p><p>${escapeHtml(clip.takeaway)}</p></div><div class="review-actions"><button class="button secondary" data-action="review-sooner" data-id="${escapeHtml(clip.id)}">Review sooner</button><button class="button primary" data-action="review-remembered" data-id="${escapeHtml(clip.id)}">I remembered</button></div>` : `<button class="button primary reveal" data-action="reveal" data-id="${escapeHtml(clip.id)}">Reveal my takeaway</button>`}
+    <footer><span>${escapeHtml(clip.episode)}</span>${safeUrl(clip.episodeUrl) ? `<a href="${safeUrl(clip.episodeUrl)}" target="_blank" rel="noreferrer">Open episode <span class="sr-only">(opens in a new tab)</span></a>` : ''}</footer></article></section>`;
 }
 
 function libraryMarkup(): string {
@@ -98,9 +101,10 @@ function notFound(): string {
 async function render(announce = true): Promise<void> {
   const path = location.pathname.replace(/\/$/, '') || '/';
   demo = path === '/demo' || new URL(location.href).searchParams.get('demo') === '1';
-  document.title = routeTitle(path);
+  const viewPath = demo ? '/demo' : path;
+  document.title = routeTitle(viewPath);
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')!.href = `https://podcast-recall-loop.sociobot.in${path}`;
-  if (path === '/demo' || path === '/app') {
+  if (viewPath === '/demo' || viewPath === '/app') {
     try { state = await loadState(demo); } catch { state = { clips: [] }; }
     app.innerHTML = appPage();
   } else if (path === '/') app.innerHTML = landing();
@@ -251,6 +255,7 @@ async function registerServiceWorker(): Promise<void> {
 }
 
 acceptLicenseFromUrl();
+const initiallyUnlocked = cachedUnlocked();
 await render(false);
-void verifyLicense().then(valid => { if (valid !== cachedUnlocked() && (location.pathname === '/app' || location.pathname === '/demo')) render(false); });
+void verifyLicense().then(valid => { if (valid !== initiallyUnlocked && (location.pathname === '/app' || location.pathname === '/demo')) render(false); });
 void registerServiceWorker();

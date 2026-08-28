@@ -33,3 +33,22 @@ test('mobile layout does not scroll sideways', async ({ page }) => {
   const sizes = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
+
+test('reset demo restores its five original clips', async ({ page }) => {
+  await page.goto('/demo');
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByText('3', { exact: true }).first()).toBeVisible();
+});
+
+test('a returned license is stored, stripped from the URL, and verified', async ({ page }) => {
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=test-license', route => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
+  }));
+  await page.goto('/app?license=test-license');
+  await expect(page).toHaveURL('/app');
+  await expect(page.getByText('Unlimited clips active.')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBe('test-license');
+});

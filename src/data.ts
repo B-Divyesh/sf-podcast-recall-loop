@@ -24,6 +24,7 @@ async function readState(db: IDBDatabase): Promise<AppState | undefined> {
 export async function loadState(demo: boolean): Promise<AppState> {
   const db = await openDb(demo);
   const existing = await readState(db);
+  db.close();
   if (existing) return existing;
   const initial = demo ? sampleState() : { clips: [] };
   await saveState(demo, initial);
@@ -35,8 +36,8 @@ export async function saveState(demo: boolean, state: AppState): Promise<void> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE, 'readwrite');
     transaction.objectStore(STORE).put(state, 'state');
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
   });
 }
 
