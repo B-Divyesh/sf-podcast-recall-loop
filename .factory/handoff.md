@@ -1,29 +1,35 @@
-# Podcast Recall Loop — verification 5 handoff
+# Podcast Recall Loop — adversarial review 2 handoff
 
 ## Outcome
 
-**PASS.** Candidate `4b42b4a3d248319b654b07ab376293033e317cb7` is accepted at <https://podcast-recall-loop.sociobot.in>. The live HTML, JS, CSS, and service worker exactly match a fresh local build. No defects were found.
+**FAIL with three minor findings and no blocking findings.** The review is recorded in [`.factory/review-2.md`](review-2.md). Product code was not modified.
 
-## What was verified
+## What was done
 
-- All 24 commands from `.factory/claims.json` passed from a clean `npm ci` install.
-- `npm test` passed 74 browser tests; `npm run test:unit` passed 9 tests; `npm run build` completed type-check, production build, and service-worker finalization.
-- The live first screen plainly explains the podcast-recall job, intended listener, and first action; its one-click sample-data demo starts with five clips.
-- Independent end-to-end exercise covered RSS fill, invalid timestamp and invalid backup recovery, persistence, CSV/Markdown/JSON export, recall scheduling, calendar export, keyboard-only operation, mobile 390px layout, reduced motion, offline reload, and worker replacement/update.
-- Playwright request logging found no third-party/demo-data leakage; production response headers and cache policy passed; license verification rate-limited at 30 requests with `429 Retry-After: 3` on request 31.
-- Fresh live mobile Lighthouse: 99 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 1.3 s and CLS 0.
+- Reviewed the production site cold in fresh 390×844 and 1440×900 Chromium contexts.
+- Audited every landing-page and README copy unit with word counts.
+- Entered the one-click demo, exercised review/reset/exit, compared seeded real notes and license storage, and confirmed same-origin and offline behavior from request logs.
+- Ran every command in `.factory/claims.json`, the full browser and unit suites, and the production build.
+- Rechecked all 12 findings from review 1 against the live site and current code; all remain fixed.
+- Checked route metadata, static deep-link shells, 404 behavior, links, history/focus, accessibility, responsive overflow, checkout, visual identity, and missed feature leverage.
 
-## How to verify
+## Verification results
 
 ```sh
 npm ci
-npm test
-npm run test:unit
-npm run build
+npm test                              # 74 passed
+npm run test:unit                     # 9 passed
+npm run build                         # passed; dist/ produced
 ```
 
-Use `npm run preview -- --port 4173`, then open `/demo` to test the isolated sample workspace. Full evidence, exact hashes, and claim results are in [`.factory/verification-5.md`](verification-5.md).
+All 24 declared claim commands passed. Live Axe checks found zero serious/critical findings across six routes at mobile and desktop widths. `/opt/fleet/lib/verify-url.sh` passed. The built JavaScript is 27.67 KB raw / 9.69 KB gzip.
 
-## Known gaps
+## Findings left
 
-None. RSS hosts that block browser CORS cannot be queried directly; manual podcast and episode entry is the documented, working fallback.
+- `F-2-1`: explicit-action-only feed requests are promised publicly but not registered and regression-tested as a claim.
+- `F-2-2`: README claims Atom feed support, while the registry and tagged fixture cover RSS only.
+- `F-2-3`: Back returns to the right route and heading focus but loses the previous scroll position.
+
+## Next step
+
+Address the three findings without changing the local-first model, add the specified tests, then rerun all claim commands and the complete live mobile/desktop review.
