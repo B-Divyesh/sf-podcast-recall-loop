@@ -69,7 +69,8 @@
     "afterReset": "Question 1 of 3 today",
     "fiveOverdue": "Question 1 of 3 today",
     "afterThree": "You are caught up for today",
-    "afterThreeReload": "You are caught up for today"
+    "afterThreeReload": "You are caught up for today",
+    "nextDay": "Question 1 of 2 today"
   },
   "home": {
     "caption": "Save a podcast moment. Write a question. Recall it later.",
