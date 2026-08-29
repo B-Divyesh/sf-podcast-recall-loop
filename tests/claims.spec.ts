@@ -380,6 +380,34 @@ test('@claim:installable-pwa exposes an install manifest and active service work
   expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
 });
 
+test('@claim:license-storage licensing stores only the token and daily verification result', async ({ page }) => {
+  const beforeVerification = Date.now();
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=storage-boundary-license', route => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
+  }));
+  await page.goto('/');
+  await page.getByText('Restore a license').click();
+  await page.getByLabel('License token').fill('storage-boundary-license');
+  await page.getByRole('button', { name: 'Verify license' }).click();
+  await expect(page.locator('#license-status')).toHaveText('License verified. Unlimited clips are active.');
+
+  const stored = await page.evaluate(() => Object.fromEntries(
+    Object.entries(localStorage).filter(([key]) => key.startsWith('sb_license:podcast-recall-loop'))
+  ));
+  expect(Object.keys(stored).sort()).toEqual([
+    'sb_license:podcast-recall-loop',
+    'sb_license:podcast-recall-loop:verdict'
+  ]);
+  expect(stored['sb_license:podcast-recall-loop']).toBe('storage-boundary-license');
+  const verdict = JSON.parse(stored['sb_license:podcast-recall-loop:verdict']!);
+  expect(Object.keys(verdict).sort()).toEqual(['checkedAt', 'valid']);
+  expect(verdict.valid).toBe(true);
+  expect(verdict.checkedAt).toBeGreaterThanOrEqual(beforeVerification);
+  expect(verdict.checkedAt).toBeLessThanOrEqual(Date.now());
+  await page.goto('/privacy');
+  await expect(page.getByText('This app stores your license token and its daily verification result in this browser.', { exact: true })).toBeVisible();
+});
+
 async function fillClip(page: import('@playwright/test').Page, question: string): Promise<void> {
   await page.getByLabel('Podcast name').fill('The Useful Hour');
   await page.getByLabel('Episode title').fill('A durable idea');

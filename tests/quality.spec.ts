@@ -214,7 +214,7 @@ test('every route shows the build version without referring to private design no
   for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
     await page.goto(route);
     const footer = page.locator('footer.site-footer');
-    await expect(footer.getByText('Version 1.0.6', { exact: true })).toBeVisible();
+    await expect(footer.getByText('Version 1.0.7', { exact: true })).toBeVisible();
     await expect(footer).not.toContainText('design notes');
   }
 });

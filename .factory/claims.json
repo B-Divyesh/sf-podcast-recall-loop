@@ -175,6 +175,13 @@
     "sandbox": "fresh browser context at /; submit a fixture license, mock the Sociobot verification response, and assert the token is stored with an announced success message"
   },
   {
+    "id": "license-storage",
+    "claim": "The app stores only the license token and its daily verification result for licensing",
+    "where": "privacy page",
+    "test": "npm test -- --grep @claim:license-storage",
+    "sandbox": "fresh browser context at /; restore a fixture license, then assert the only sb_license:podcast-recall-loop values are the exact token and a {valid, checkedAt} verdict"
+  },
+  {
     "id": "build-coupled-updates",
     "claim": "Installed copies receive every new app build without a manual cache-version edit",
     "where": "README",

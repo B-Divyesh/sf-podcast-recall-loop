@@ -72,7 +72,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop — Remember podcast ideas | 7 | Pass; title under 60 characters |
 | Save a podcast timestamp, write your own question, and recall three ideas each day. | 14 | Pass; meta description |
 | Turn podcast moments into three daily recall questions. | 8 | Pass; social description |
-| Save podcast moments and recall up to three questions each day. | 11 | Pass; verb-first catalog line, 63 characters |
+| Save podcast moments, write recall questions, and review three each day. | 11 | Pass; verb-first catalog line, 72 characters |
 
 ## Terminology
 
