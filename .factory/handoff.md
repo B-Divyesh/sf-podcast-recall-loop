@@ -1,4 +1,20 @@
-# Podcast Recall Loop — polish round 3 handoff
+# Podcast Recall Loop — verification 7 handoff
+
+## Current independent verification — PASS
+
+On 29 August 2026, independent QA accepted candidate
+`d12f490f3cf0942fe5182bc1075a21786374bae9` at
+<https://podcast-recall-loop.sociobot.in>. The live HTML, JavaScript, and
+service worker match the fresh candidate build byte-for-byte. All 26 required
+claim commands, the complete Playwright and unit suites, and the exact
+production build passed. The demo, capture/review loop, offline reload,
+privacy request log, rate limit, checkout, keyboard/mobile, headers, bundle
+budgets, and axe checks passed with no defects at any severity.
+
+The observed license-verification allowance is 30 requests per client window;
+request 31 returns 429 with `Retry-After: 4`. See
+[`.factory/verification-7.md`](verification-7.md) for exact commands,
+evidence, scope, and the one container-only Lighthouse limitation.
 
 ## Outcome
 
