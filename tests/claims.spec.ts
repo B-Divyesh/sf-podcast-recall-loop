@@ -130,7 +130,9 @@ test('@claim:atom-lookup an Atom feed fills podcast, episode, and link fields', 
 
 test('@claim:daily-three daily recall presents no more than three due questions', async ({ page }) => {
   await page.goto('/demo');
-  await page.evaluate(async () => {
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
+  const seeded = await page.evaluate(async () => {
     const database = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open('podcast-recall-loop-demo');
       request.onsuccess = () => resolve(request.result);
@@ -150,7 +152,10 @@ test('@claim:daily-three daily recall presents no more than three due questions'
       transaction.onerror = () => reject(transaction.error);
     });
     database.close();
+    return { clips: state.clips.length, dueDates: state.clips.map(clip => clip.dueAt) };
   });
+  expect(seeded.clips).toBe(5);
+  expect(new Set(seeded.dueDates)).toEqual(new Set(['2020-01-01T08:00:00.000Z']));
   await page.reload();
   await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
   for (let index = 0; index < 3; index += 1) {
