@@ -2,9 +2,9 @@
 
 ## Entry point
 
-- Local: `http://localhost:4173/demo`
-- Production: `https://podcast-recall-loop.sociobot.in/demo`
-- Query alias: `/?demo=1`
+- Local: `http://localhost:4173/?demo=1`
+- Production: `https://podcast-recall-loop.sociobot.in/?demo=1`
+- Canonical route: `/demo`
 
 The first screen links to the demo with **Try it with sample data**.
 
@@ -22,4 +22,4 @@ Demo state uses the IndexedDB database `podcast-recall-loop-demo`. Real notes us
 
 ## Verification
 
-Claim tests begin with a fresh browser context. They use only `/demo` and its shipped sample data. The RSS test fulfills a local fixture response and makes no live feed request.
+Claim tests begin with a fresh browser context. They use only `?demo=1` or `/demo` and the shipped sample data. Feed tests fulfill recorded RSS and Atom responses and make no uncontrolled request.

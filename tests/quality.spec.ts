@@ -38,10 +38,29 @@ test('keyboard navigation reaches the demo and the primary review action', async
   await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
   await page.getByRole('link', { name: 'Try it with sample data' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/\?demo=1$/);
+  await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved to your notes.');
   await page.getByRole('button', { name: 'Reveal my takeaway' }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.answer-label')).toHaveText('Your takeaway');
+});
+
+test('Back restores the previous scroll position and focuses its page heading', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, 1200);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+  const previousY = await page.evaluate(() => window.scrollY);
+  expect(previousY).toBeGreaterThan(0);
+  await page.evaluate(() => (document.querySelector<HTMLAnchorElement>('a[href="/privacy"][data-link]'))!.click());
+  await expect(page).toHaveURL('/privacy');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  await page.goBack();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(previousY);
 });
 
 test('mobile layout does not scroll sideways', async ({ page }) => {

@@ -53,4 +53,4 @@ Read-aloud check: the first screen says what it does, who it is for, and what to
 | Paid no-limit state | unlimited |
 | Podcast metadata source | podcast feed |
 
-Catalog description: “Turn podcast moments into three daily recall questions.” (8 words, 57 characters.)
+Catalog description: “Turn saved podcast moments into three daily recall questions.” (9 words, 58 characters.)

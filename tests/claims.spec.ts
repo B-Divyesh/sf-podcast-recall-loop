@@ -30,7 +30,7 @@ test('@claim:demo-isolation demo never reads or writes real notes or licenses', 
     database.close();
     return { storage: Object.fromEntries(Object.entries(localStorage)), value };
   });
-  await page.goto('/demo?license=demo-url-token');
+  await page.goto('/?demo=1&license=demo-url-token');
   await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
   await saveClip(page, 'A demo-only question?');
   await expect(page.getByText('6 saved clips.')).toBeVisible();
@@ -66,6 +66,38 @@ test('@claim:rss-lookup an RSS feed fills podcast and episode fields', async ({ 
   await expect(page.getByLabel('Podcast name')).toHaveValue('Careful Learner');
   await expect(page.getByLabel('Episode title')).toHaveValue('The testing effect');
   await expect(page.getByLabel('Episode link optional')).toHaveValue('https://example.test/episode');
+});
+
+test('@claim:feed-explicit-request the feed address is contacted only after Find episodes is pressed', async ({ page }) => {
+  const requestedFeeds: string[] = [];
+  await page.route('https://feeds.example.test/private.xml', route => {
+    requestedFeeds.push(route.request().url());
+    return route.fulfill({
+      contentType: 'application/rss+xml',
+      body: '<?xml version="1.0"?><rss><channel><title>Private Learning</title><item><title>One saved lesson</title></item></channel></rss>'
+    });
+  });
+  await page.goto('/demo');
+  await page.getByLabel('Podcast feed address').fill('https://feeds.example.test/private.xml');
+  await page.waitForTimeout(200);
+  expect(requestedFeeds).toEqual([]);
+  await page.getByRole('button', { name: 'Find episodes' }).click();
+  await expect(page.getByText('Found 1 recent episodes.')).toBeVisible();
+  expect(requestedFeeds).toEqual(['https://feeds.example.test/private.xml']);
+});
+
+test('@claim:atom-lookup an Atom feed fills podcast, episode, and link fields', async ({ page }) => {
+  await page.route('https://feeds.example.test/learning.atom', route => route.fulfill({
+    contentType: 'application/atom+xml',
+    body: `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>Atom Learning</title><entry><title>An Atom episode</title><link href="https://example.test/atom-episode"/><updated>2026-08-28T10:00:00Z</updated></entry></feed>`
+  }));
+  await page.goto('/demo');
+  await page.getByLabel('Podcast feed address').fill('https://feeds.example.test/learning.atom');
+  await page.getByRole('button', { name: 'Find episodes' }).click();
+  await expect(page.getByText('Found 1 recent episodes.')).toBeVisible();
+  await expect(page.getByLabel('Podcast name')).toHaveValue('Atom Learning');
+  await expect(page.getByLabel('Episode title')).toHaveValue('An Atom episode');
+  await expect(page.getByLabel('Episode link optional')).toHaveValue('https://example.test/atom-episode');
 });
 
 test('@claim:daily-three daily recall presents no more than three due questions', async ({ page }) => {

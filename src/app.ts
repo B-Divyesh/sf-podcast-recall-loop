@@ -11,6 +11,28 @@ let revealedId = '';
 let online = navigator.onLine;
 let licenseInactive = false;
 
+type NavigationState = { scrollY?: number };
+
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+function rememberScrollPosition(): void {
+  const current = history.state && typeof history.state === 'object' ? history.state as NavigationState : {};
+  history.replaceState({ ...current, scrollY: window.scrollY }, '');
+}
+
+function isDemoUrl(href: string): boolean {
+  const url = new URL(href, location.href);
+  return (url.pathname.replace(/\/$/, '') || '/') === '/demo' || url.searchParams.get('demo') === '1';
+}
+
+async function navigate(href: string): Promise<void> {
+  if (demo && !isDemoUrl(href)) await resetDemo();
+  rememberScrollPosition();
+  history.pushState({ scrollY: 0 } satisfies NavigationState, '', href);
+  await render();
+  window.scrollTo(0, 0);
+}
+
 const escapeHtml = (value: string): string => value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]!);
 const safeUrl = (value: string): string => {
   try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? escapeHtml(url.href) : ''; } catch { return ''; }
@@ -59,7 +81,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" target="_blank" rel="noreferrer">Built by Param Factory <span class="sr-only">(opens in a new tab)</span></a></nav><p>Version 1.0.2 · Generated art disclosed in the design notes.</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" target="_blank" rel="noreferrer">Built by Param Factory <span class="sr-only">(opens in a new tab)</span></a></nav><p>Version 1.0.3 · Generated art disclosed in the design notes.</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -70,7 +92,7 @@ function landing(): string {
         <p class="eyebrow">Podcast recall for long listens</p>
         <h1 id="hero-title" tabindex="-1">Remember what your podcasts taught you</h1>
         <p class="lede">For curious listeners who save good moments but forget the ideas.</p>
-        <div class="hero-actions"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads five podcast clips. No setup.</span></div>
+        <div class="hero-actions"><a class="button primary" href="/?demo=1" data-link>Try it with sample data</a><span>Loads five podcast clips. No setup.</span></div>
         <a class="quiet-link" href="/app" data-link>Add a podcast feed →</a>
         <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
       </div>
@@ -106,7 +128,7 @@ function appPage(): string {
   return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${dueClips(state.clips).length} questions due"><strong>${dueClips(state.clips).length}</strong><span>due</span></div></div>
     ${reviewMarkup()}
     <section id="capture" class="capture" aria-labelledby="capture-title"><div class="section-heading"><div><p class="eyebrow">Capture a moment</p><h2 id="capture-title">Write the question only you need</h2></div><p>${unlocked ? 'Unlimited clips active.' : `${Math.max(0, 8 - state.clips.length)} of 8 free clip spaces remain.`}</p></div>
-      <form id="feed-form" class="feed-form"><label for="feed-url">Podcast feed address</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">Paste the show’s feed address. If you do not have it, enter the podcast and episode below.</p><p class="field-help">The feed is requested only when you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>
+      <form id="feed-form" class="feed-form"><label for="feed-url">Podcast feed address</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">Paste the show’s feed address. If you do not have it, enter the podcast and episode below.</p><p class="field-help">The app contacts the feed address only after you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>
       <form id="clip-form" class="clip-form"><div class="form-grid"><label>Podcast name<input name="podcast" required maxlength="100" autocomplete="off"></label><label>Episode title<input name="episode" required maxlength="160" autocomplete="off"></label><label>Timestamp<input name="timestamp" required inputmode="numeric" placeholder="12:34" pattern="([0-9]+:)?[0-5]?[0-9]:[0-5][0-9]" aria-describedby="timestamp-help"><span id="timestamp-help" class="field-help">Use minutes:seconds or hours:minutes:seconds.</span></label><label>Episode link <span class="optional">optional</span><input name="episodeUrl" type="url" autocomplete="url"></label></div><label>Your recall question<textarea name="prompt" required maxlength="240" rows="3"></textarea></label><label>Your takeaway<textarea name="takeaway" required maxlength="500" rows="4"></textarea></label><p id="clip-status" class="form-status" aria-live="polite"></p><button class="button primary" type="submit">Save recall question</button></form>
     </section>
     <section class="library" aria-labelledby="library-title"><div class="section-heading"><div><p class="eyebrow">Your library</p><h2 id="library-title">Saved recall questions</h2></div><div class="export-actions"><button data-action="export-md">Export Markdown</button><button data-action="export-csv">Export CSV</button><button data-action="export-json">Export backup</button><label class="file-button">Import backup<input id="import-file" type="file" accept="application/json,.json"></label></div></div>${libraryMarkup()}</section>
@@ -114,7 +136,7 @@ function appPage(): string {
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app requests a feed address only after you choose Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or starting for real deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app contacts the feed address only after you press Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or starting for real deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
 }
 
 function terms(): string {
@@ -248,7 +270,7 @@ document.addEventListener('click', async event => {
   const target = (event.target as Element).closest<HTMLElement>('[data-link], [data-action]');
   if (!target) return;
   if (target.matches('[data-link]')) {
-    event.preventDefault(); history.pushState({}, '', (target as HTMLAnchorElement).href); await render(); window.scrollTo(0, 0); return;
+    event.preventDefault(); await navigate((target as HTMLAnchorElement).href); return;
   }
   const action = target.dataset.action;
   if (action === 'reveal') { revealedId = target.dataset.id || ''; await render(false); document.querySelector<HTMLElement>('.revealed')?.focus(); }
@@ -269,7 +291,7 @@ document.addEventListener('click', async event => {
     showToast('Daily calendar reminder downloaded.');
   }
   if (action === 'reset-demo') { await resetDemo(); state = await loadState(true); revealedId = ''; await render(false); showToast('Demo reset to five sample clips.'); }
-  if (action === 'leave-demo') { await resetDemo(); history.pushState({}, '', '/app'); revealedId = ''; await render(); window.scrollTo(0, 0); }
+  if (action === 'leave-demo') { revealedId = ''; await navigate('/app'); }
   if (action === 'apply-update') {
     const registration = await navigator.serviceWorker.getRegistration();
     const waiting = registration?.waiting;
@@ -279,7 +301,22 @@ document.addEventListener('click', async event => {
   }
 });
 
-window.addEventListener('popstate', () => render());
+window.addEventListener('popstate', async event => {
+  const savedY = typeof (event.state as NavigationState | null)?.scrollY === 'number'
+    ? (event.state as NavigationState).scrollY!
+    : 0;
+  if (demo && !isDemoUrl(location.href)) await resetDemo();
+  await render();
+  requestAnimationFrame(() => window.scrollTo(0, savedY));
+});
+let scrollFrame = 0;
+window.addEventListener('scroll', () => {
+  if (scrollFrame) return;
+  scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = 0;
+    rememberScrollPosition();
+  });
+}, { passive: true });
 window.addEventListener('online', () => { online = true; render(false); });
 window.addEventListener('offline', () => { online = false; render(false); });
 

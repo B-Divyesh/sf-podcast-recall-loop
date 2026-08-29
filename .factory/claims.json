@@ -28,6 +28,20 @@
     "sandbox": "fresh browser context at /demo with a locally fulfilled RSS response"
   },
   {
+    "id": "feed-explicit-request",
+    "claim": "The app contacts a feed address only after Find episodes is pressed",
+    "where": "capture form, privacy page, README",
+    "test": "npm test -- --grep @claim:feed-explicit-request",
+    "sandbox": "fresh browser context at /demo; fill a private fixture feed address, assert zero requests before activation, then press Find episodes and assert exactly one request to that address"
+  },
+  {
+    "id": "atom-lookup",
+    "claim": "An Atom feed can fill the podcast, episode, and link fields",
+    "where": "README developer notes",
+    "test": "npm test -- --grep @claim:atom-lookup",
+    "sandbox": "fresh browser context at /demo with a locally fulfilled Atom response; assert the exact podcast, episode, and link values"
+  },
+  {
     "id": "daily-three",
     "claim": "The daily recall queue presents no more than three due questions",
     "where": "landing, app heading, README",

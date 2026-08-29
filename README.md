@@ -4,7 +4,7 @@ Turn podcast moments into three daily recall questions.
 
 Podcast Recall Loop is for self-learners who want recall without a larger note system. Add a podcast feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
 
-The app stores written notes in this browser. It stores no audio. The demo at `/demo` uses separate browser storage and never reads or writes your notes or license.
+The app stores written notes in this browser. It stores no audio. The demo at `?demo=1` uses separate browser storage and never reads or writes your notes or license.
 
 ## What v1 includes
 
@@ -20,7 +20,7 @@ The app stores written notes in this browser. It stores no audio. The demo at `/
 
 ## Try the isolated demo
 
-Open `http://localhost:4173/demo` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. **Start for real** discards demo changes and opens the separate, empty library.
+Open `http://localhost:4173/?demo=1` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. **Start for real** discards demo changes and opens the separate, empty library.
 
 ## Develop
 
@@ -57,7 +57,7 @@ Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` prov
 
 ## Privacy
 
-The privacy policy is at `/privacy`; terms are at `/terms`. Feed URLs are requested only when the listener presses **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
+The privacy policy is at `/privacy`; terms are at `/terms`. The app contacts the feed address only after you press **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
 
 ## One-time license
 
@@ -65,7 +65,7 @@ The free library holds eight clips. A $9 one-time license removes that limit. So
 
 ## Developer notes
 
-The browser storage implementation uses IndexedDB. The feed parser reads RSS or Atom metadata only after the listener requests it.
+The browser storage implementation uses IndexedDB. The app reads RSS and Atom feeds only after you press **Find episodes**.
 
 ## Project notes
 
