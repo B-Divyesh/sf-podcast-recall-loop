@@ -45,6 +45,18 @@ test('keyboard navigation reaches the demo and the primary review action', async
   await expect(page.locator('.answer-label')).toHaveText('Your takeaway');
 });
 
+test('cold first screen names the job, audience, sample outcome, and three facts', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Remember what your podcasts taught you');
+  await expect(page.getByText('For curious listeners who save good moments but forget the ideas.', { exact: true })).toBeVisible();
+  const demo = page.getByRole('link', { name: 'Try it with sample data' });
+  await expect(demo).toHaveAttribute('href', '/?demo=1');
+  await expect(page.getByText('Opens five sample clips from fictional shows. No setup.', { exact: true })).toBeVisible();
+  for (const fact of ['Notes stay in this browser.', 'Reviews work offline after your first visit.', 'The free library holds eight clips.']) {
+    await expect(page.getByText(fact, { exact: true })).toBeVisible();
+  }
+});
+
 test('Back restores the previous scroll position and focuses its page heading', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => {
