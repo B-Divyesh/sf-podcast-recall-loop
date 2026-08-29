@@ -8,10 +8,10 @@
   },
   {
     "id": "demo-isolation",
-    "claim": "Demo never reads or writes real notes or license storage",
+    "claim": "Demo never reads or writes real notes or license storage, and every exit discards sample changes",
     "where": "demo banner, README",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh browser context; seed a real note library and license, use /demo?license=..., then byte-compare real IndexedDB and localStorage with zero external requests"
+    "sandbox": "fresh browser context; seed a real library and license, use /?demo=1&license=..., byte-compare real storage, then change a sample before the visible Restore, checkout, and Start for real exits and confirm each restores five clips and three due questions"
   },
   {
     "id": "demo-seed-reset",

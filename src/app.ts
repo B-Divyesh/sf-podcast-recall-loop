@@ -30,7 +30,9 @@ async function navigate(href: string): Promise<void> {
   rememberScrollPosition();
   history.pushState({ scrollY: 0 } satisfies NavigationState, '', href);
   await render();
-  window.scrollTo(0, 0);
+  const fragment = location.hash ? document.querySelector<HTMLElement>(location.hash) : null;
+  if (fragment) fragment.scrollIntoView();
+  else window.scrollTo(0, 0);
 }
 
 const escapeHtml = (value: string): string => value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]!);
@@ -81,7 +83,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" target="_blank" rel="noreferrer">Built by Param Factory <span class="sr-only">(opens in a new tab)</span></a></nav><p>Version 1.0.3 · Generated art disclosed in the design notes.</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.4 · Generated art disclosed in the design notes.</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -92,7 +94,7 @@ function landing(): string {
         <p class="eyebrow">Podcast recall for long listens</p>
         <h1 id="hero-title" tabindex="-1">Remember what your podcasts taught you</h1>
         <p class="lede">For curious listeners who save good moments but forget the ideas.</p>
-        <div class="hero-actions"><a class="button primary" href="/?demo=1" data-link>Try it with sample data</a><span>Loads five podcast clips. No setup.</span></div>
+        <div class="hero-actions"><a class="button primary" href="/?demo=1" data-link>Try it with sample data</a><span>Opens five sample clips from fictional shows. No setup.</span></div>
         <a class="quiet-link" href="/app" data-link>Add a podcast feed →</a>
         <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
       </div>
@@ -115,7 +117,7 @@ function reviewMarkup(): string {
   return `<section class="review-zone" aria-labelledby="review-title"><div class="review-heading"><div><p class="eyebrow">Question ${index} of up to 3 today</p><h2 id="review-title">Recall before you reveal</h2></div><p>${due.length} due now</p></div>
     <article class="prompt-card active-card" data-clip-id="${escapeHtml(clip.id)}"><p class="timestamp">${formatTimestamp(clip.timestampSec)} · ${escapeHtml(clip.podcast)}</p><h3>${escapeHtml(clip.prompt)}</h3>
     ${revealedId === clip.id ? `<div class="revealed" tabindex="-1"><p class="answer-label">Your takeaway</p><p>${escapeHtml(clip.takeaway)}</p></div><div class="review-actions"><button class="button secondary" data-action="review-sooner" data-id="${escapeHtml(clip.id)}">Review sooner</button><button class="button primary" data-action="review-remembered" data-id="${escapeHtml(clip.id)}">I remembered</button></div>` : `<button class="button primary reveal" data-action="reveal" data-id="${escapeHtml(clip.id)}">Reveal my takeaway</button>`}
-    <footer><span>${escapeHtml(clip.episode)}</span>${safeUrl(clip.episodeUrl) ? `<a href="${safeUrl(clip.episodeUrl)}" target="_blank" rel="noreferrer">Open episode <span class="sr-only">(opens in a new tab)</span></a>` : ''}</footer></article></section>`;
+    <footer><span>${escapeHtml(clip.episode)}</span>${safeUrl(clip.episodeUrl) ? `<a href="${safeUrl(clip.episodeUrl)}" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Open episode ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a>` : ''}</footer></article></section>`;
 }
 
 function libraryMarkup(): string {
@@ -132,11 +134,11 @@ function appPage(): string {
       <form id="clip-form" class="clip-form"><div class="form-grid"><label>Podcast name<input name="podcast" required maxlength="100" autocomplete="off"></label><label>Episode title<input name="episode" required maxlength="160" autocomplete="off"></label><label>Timestamp<input name="timestamp" required inputmode="numeric" placeholder="12:34" pattern="([0-9]+:)?[0-5]?[0-9]:[0-5][0-9]" aria-describedby="timestamp-help"><span id="timestamp-help" class="field-help">Use minutes:seconds or hours:minutes:seconds.</span></label><label>Episode link <span class="optional">optional</span><input name="episodeUrl" type="url" autocomplete="url"></label></div><label>Your recall question<textarea name="prompt" required maxlength="240" rows="3"></textarea></label><label>Your takeaway<textarea name="takeaway" required maxlength="500" rows="4"></textarea></label><p id="clip-status" class="form-status" aria-live="polite"></p><button class="button primary" type="submit">Save recall question</button></form>
     </section>
     <section class="library" aria-labelledby="library-title"><div class="section-heading"><div><p class="eyebrow">Your library</p><h2 id="library-title">Saved recall questions</h2></div><div class="export-actions"><button data-action="export-md">Export Markdown</button><button data-action="export-csv">Export CSV</button><button data-action="export-json">Export backup</button><label class="file-button">Import backup<input id="import-file" type="file" accept="application/json,.json"></label></div></div>${libraryMarkup()}</section>
-    ${!unlocked ? `<aside class="limit-note">${licenseInactive ? '<p class="license-inactive" role="status"><strong>Your saved license is no longer active.</strong> The free eight-clip limit now applies.</p>' : '<p><strong>The free library holds eight clips.</strong> Export your notes, delete one, or buy the one-time unlimited license.</p>'}<a href="${buyUrl()}">Buy unlimited — $9 once</a><a href="/#restore-license">Restore a license</a></aside>` : ''}`);
+    ${!unlocked ? `<aside class="limit-note">${licenseInactive ? '<p class="license-inactive" role="status"><strong>Your saved license is no longer active.</strong> The free eight-clip limit now applies.</p>' : '<p><strong>The free library holds eight clips.</strong> Export your notes, delete one, or buy the one-time unlimited license.</p>'}<a href="${buyUrl()}">Buy unlimited — $9 once</a><a href="/#restore-license" data-link>Restore a license</a></aside>` : ''}`);
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app contacts the feed address only after you press Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or starting for real deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app contacts the feed address only after you press Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or following any link out deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
 }
 
 function terms(): string {
@@ -160,10 +162,15 @@ async function render(announce = true): Promise<void> {
   else if (path === '/terms') app.innerHTML = terms();
   else app.innerHTML = notFound();
   bindForms();
+  const restorePanel = document.querySelector<HTMLDetailsElement>('#restore-license');
+  if (location.hash === '#restore-license' && restorePanel) {
+    restorePanel.open = true;
+  }
   if (announce) {
     const heading = document.querySelector<HTMLHeadingElement>('h1');
     routeStatus.textContent = heading?.textContent || '';
-    heading?.focus({ preventScroll: true });
+    if (restorePanel?.open) restorePanel.querySelector<HTMLInputElement>('#license-token')?.focus({ preventScroll: true });
+    else heading?.focus({ preventScroll: true });
   }
 }
 
@@ -267,8 +274,14 @@ function bindForms(): void {
 }
 
 document.addEventListener('click', async event => {
-  const target = (event.target as Element).closest<HTMLElement>('[data-link], [data-action]');
+  const target = (event.target as Element).closest<HTMLElement>('[data-link], [data-action], a[href]');
   if (!target) return;
+  if (target instanceof HTMLAnchorElement && demo && !isDemoUrl(target.href) && !target.matches('[data-link]')) {
+    event.preventDefault();
+    await resetDemo();
+    location.assign(target.href);
+    return;
+  }
   if (target.matches('[data-link]')) {
     event.preventDefault(); await navigate((target as HTMLAnchorElement).href); return;
   }

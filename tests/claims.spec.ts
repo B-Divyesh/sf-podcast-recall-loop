@@ -46,6 +46,34 @@ test('@claim:demo-isolation demo never reads or writes real notes or licenses', 
   });
   expect(after).toEqual(before);
   expect(external).toEqual([]);
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Delete question: A demo-only question?' }).click();
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+  const restoreExit = page.getByRole('link', { name: 'Restore a license' });
+  await expect(restoreExit).toHaveAttribute('href', '/#restore-license');
+  await restoreExit.click();
+  await expect(page).toHaveURL('/#restore-license');
+  await expect(page.getByLabel('License token')).toBeVisible();
+  await expect(page.getByLabel('License token')).toBeFocused();
+  await page.goto('/demo');
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
+  await expect(page.getByText('A demo-only question?')).toHaveCount(0);
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout', route => route.fulfill({
+    contentType: 'text/html',
+    body: '<title>Recorded checkout</title><main><h1>Recorded checkout</h1></main>'
+  }));
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await page.getByRole('link', { name: 'Buy unlimited — $9 once' }).click();
+  await expect(page).toHaveTitle('Recorded checkout');
+  await page.goto('/?demo=1');
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page.getByText('A real-library question?', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('A demo-only question?')).toHaveCount(0);

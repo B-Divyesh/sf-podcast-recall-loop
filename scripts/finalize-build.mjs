@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 export function renderServiceWorker(template, html) {
   const assetUrls = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map(match => match[1]);
   const shell = [...new Set([
-    '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg',
+    '/', '/index.html', '/offline.html', '/offline.css', '/manifest.webmanifest', '/favicon.svg',
     '/assets/recall-ceramics.webp', '/assets/recall-ceramics-small.webp', '/icon-192.png',
     ...assetUrls
   ])];

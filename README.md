@@ -4,7 +4,7 @@ Turn podcast moments into three daily recall questions.
 
 Podcast Recall Loop is for self-learners who want recall without a larger note system. Add a podcast feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
 
-The app stores written notes in this browser. It stores no audio. The demo at `?demo=1` uses separate browser storage and never reads or writes your notes or license.
+The app stores written notes in this browser. It stores no audio. The demo at `?demo=1` uses separate browser storage and never reads or writes your notes or license. Every exit discards sample changes.
 
 ## What v1 includes
 
@@ -20,7 +20,7 @@ The app stores written notes in this browser. It stores no audio. The demo at `?
 
 ## Try the isolated demo
 
-Open `http://localhost:4173/?demo=1` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. **Start for real** discards demo changes and opens the separate, empty library.
+Open `http://localhost:4173/?demo=1` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. Every link that leaves the demo discards its changes. **Start for real** opens the separate, empty library.
 
 ## Develop
 

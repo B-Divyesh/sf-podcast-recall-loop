@@ -59,4 +59,13 @@ describe('release regressions', () => {
     expect(app).toContain('registration?.waiting');
     expect(app).toContain("postMessage('SKIP_WAITING')");
   });
+
+  test('the offline fallback obeys the self-only style policy', () => {
+    const html = readFileSync('public/offline.html', 'utf8');
+    const css = readFileSync('public/offline.css', 'utf8');
+    expect(html).toContain('<link rel="stylesheet" href="/offline.css" />');
+    expect(html).not.toContain('<style>');
+    expect(css).toContain('prefers-color-scheme: dark');
+    expect(css).toContain('min-height: 44px');
+  });
 });
