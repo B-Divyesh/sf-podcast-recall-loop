@@ -74,4 +74,25 @@ describe('release regressions', () => {
     expect(pkg.engines.node).toBe('^20.19.0 || >=22.12.0');
     expect(readFileSync('README.md', 'utf8')).toContain('Requires Node.js 20.19+ or 22.12+.');
   });
+
+  test('every registered claim has exactly one test tag and no test tag is unregistered', () => {
+    const claims = JSON.parse(readFileSync('.factory/claims.json', 'utf8')) as Array<{ id: string }>;
+    const sources = [
+      readFileSync('tests/claims.spec.ts', 'utf8'),
+      readFileSync('tests/quality.spec.ts', 'utf8'),
+      readFileSync('tests/unit/release.test.ts', 'utf8')
+    ].join('\n');
+    const tagPattern = new RegExp('@' + 'claim:([a-z0-9-]+)', 'g');
+    const tagCounts = [...sources.matchAll(tagPattern)].reduce<Record<string, number>>((counts, match) => {
+      const id = match[1]!;
+      counts[id] = (counts[id] || 0) + 1;
+      return counts;
+    }, {});
+    const registered = claims.map(claim => claim.id).sort();
+
+    expect(Object.keys(tagCounts).sort()).toEqual(registered);
+    expect(Object.fromEntries(registered.map(id => [id, tagCounts[id]]))).toEqual(
+      Object.fromEntries(registered.map(id => [id, 1]))
+    );
+  });
 });
