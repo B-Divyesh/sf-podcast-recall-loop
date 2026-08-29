@@ -155,8 +155,8 @@
   },
   {
     "id": "existing-license",
-    "claim": "An existing valid license removes the eight-clip limit and is checked at most once each day",
-    "where": "landing price, app limit, privacy and terms pages",
+    "claim": "An existing valid license removes the eight-clip limit and is automatically checked at most once each day",
+    "where": "landing price, app limit, privacy page",
     "test": "npm test -- --grep @claim:existing-license",
     "sandbox": "fresh /app context with a returned fixture license; mock a valid Sociobot response, save nine clips, reload, and assert only one verification request"
   },

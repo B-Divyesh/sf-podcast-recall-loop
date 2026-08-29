@@ -84,7 +84,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.7</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.8</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -140,7 +140,7 @@ function appPage(): string {
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app contacts the feed address only after you press Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores your license token and its daily verification result in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or following any link out deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app contacts the feed address only after you press Find episodes. After you restore a license, the app automatically checks the stored license at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores your license token and its daily verification result in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or following any link out deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
 }
 
 function terms(): string {

@@ -23,6 +23,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 
 | Copy | Words | Result |
 | --- | ---: | --- |
+| After you restore a license, the app automatically checks the stored license at most once each day. | 17 | Pass; `existing-license` covers automatic reloads and the explicit-check regression proves manual submissions remain user-requested |
 | This app stores your license token and its daily verification result in this browser. | 14 | Pass; `license-storage` verifies the exact keys and verdict fields |
 
 ## Remaining landing page
@@ -69,7 +70,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Three podcast ideas, recalled daily. | 5 | Pass |
 | Privacy / Terms | 1 each | Pass; destinations |
 | Built by Param Factory | 4 | Pass |
-| Version 1.0.6 | 2 | Pass; build id without an inaccessible internal reference |
+| Version 1.0.8 | 2 | Pass; build id without an inaccessible internal reference |
 
 ## Metadata and catalog
 
@@ -78,7 +79,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop — Remember podcast ideas | 7 | Pass; title under 60 characters |
 | Save a podcast timestamp, write your own question, and recall three ideas each day. | 14 | Pass; meta description |
 | Turn podcast moments into three daily recall questions. | 8 | Pass; social description |
-| Save podcast moments, write recall questions, and review three each day. | 11 | Pass; verb-first catalog line, 72 characters |
+| Turn podcast moments into questions and recall three ideas each day. | 11 | Pass; verb-first catalog line, 68 characters including the final period |
 
 ## Terminology
 

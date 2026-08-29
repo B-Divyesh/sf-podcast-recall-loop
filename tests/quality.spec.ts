@@ -135,7 +135,7 @@ test('@claim:demo-seed-reset demo starts at question one and reset restores the 
   await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
 });
 
-test('@claim:existing-license a returned license is stored, stripped, and verified once per day', async ({ page }) => {
+test('@claim:existing-license a returned license is stored, stripped, and automatically verified once per day', async ({ page }) => {
   let verificationRequests = 0;
   await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=test-license', route => route.fulfill({
     contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
@@ -152,6 +152,27 @@ test('@claim:existing-license a returned license is stored, stripped, and verifi
   await page.reload();
   await expect(page.getByText('Unlimited clips active.')).toBeVisible();
   expect(verificationRequests).toBe(1);
+});
+
+test('explicit Verify license submissions each request a fresh check while automatic reloads stay cached', async ({ page }) => {
+  let verificationRequests = 0;
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=explicit-license', route => {
+    verificationRequests += 1;
+    return route.fulfill({
+      contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
+    });
+  });
+  await page.goto('/');
+  await page.getByText('Restore a license').click();
+  await page.getByLabel('License token').fill('explicit-license');
+  await page.getByRole('button', { name: 'Verify license' }).click();
+  await expect(page.locator('#license-status')).toHaveText('License verified. Unlimited clips are active.');
+  await page.getByRole('button', { name: 'Verify license' }).click();
+  await expect.poll(() => verificationRequests).toBe(2);
+  await page.reload();
+  await expect.poll(() => verificationRequests).toBe(2);
+  await page.goto('/privacy');
+  await expect(page.getByText('After you restore a license, the app automatically checks the stored license at most once each day.')).toBeVisible();
 });
 
 test('@claim:one-time-unlimited @claim:sociobot-billing the $9 one-time purchase opens the recorded Sociobot checkout', async ({ page }) => {
@@ -214,7 +235,7 @@ test('every route shows the build version without referring to private design no
   for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
     await page.goto(route);
     const footer = page.locator('footer.site-footer');
-    await expect(footer.getByText('Version 1.0.7', { exact: true })).toBeVisible();
+    await expect(footer.getByText('Version 1.0.8', { exact: true })).toBeVisible();
     await expect(footer).not.toContainText('design notes');
   }
 });

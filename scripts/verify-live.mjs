@@ -3,7 +3,7 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const baseUrl = (process.argv[2] || 'https://podcast-recall-loop.sociobot.in').replace(/\/$/, '');
-const evidenceDir = process.argv[3] || '.factory/evidence/polish-6';
+const evidenceDir = process.argv[3] || '.factory/evidence/polish-7';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -58,7 +58,7 @@ try {
   const factsBox = await mobile.locator('.plain-facts').boundingBox();
   assert(Boolean(factsBox) && factsBox.y + factsBox.height <= 844, 'First-screen facts fall below the 390x844 viewport.');
   assert(await mobile.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'Home overflows at 390px.');
-  await mobile.locator('footer.site-footer').getByText('Version 1.0.7', { exact: true }).waitFor();
+  await mobile.locator('footer.site-footer').getByText('Version 1.0.8', { exact: true }).waitFor();
   assert(!(await mobile.locator('footer.site-footer').innerText()).includes('design notes'), 'Footer still refers to design notes.');
   await mobile.screenshot({ path: `${evidenceDir}/live-home-mobile.png`, fullPage: true });
 
@@ -136,16 +136,27 @@ try {
 
   const licenseContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const licensePage = await licenseContext.newPage();
-  await licensePage.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=live-storage-boundary', route => route.fulfill({
-    contentType: 'application/json',
-    body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
-  }));
+  let explicitVerificationRequests = 0;
+  await licensePage.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=live-storage-boundary', route => {
+    explicitVerificationRequests += 1;
+    return route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
+    });
+  });
   await licensePage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
   await licensePage.getByText('Restore a license').click();
   await licensePage.getByLabel('License token').fill('live-storage-boundary');
   const beforeVerification = Date.now();
+  const firstExplicitRequest = licensePage.waitForRequest(request => request.url().includes('/verify?license=live-storage-boundary'));
   await licensePage.getByRole('button', { name: 'Verify license' }).click();
+  await firstExplicitRequest;
   await licensePage.getByText('License verified. Unlimited clips are active.').waitFor();
+  const secondExplicitRequest = licensePage.waitForRequest(request => request.url().includes('/verify?license=live-storage-boundary'));
+  await licensePage.getByRole('button', { name: 'Verify license' }).click();
+  await secondExplicitRequest;
+  await licensePage.getByText('License verified. Unlimited clips are active.').waitFor();
+  assert(explicitVerificationRequests === 2, `Two explicit license checks made ${explicitVerificationRequests} requests.`);
   const licenseStorage = await licensePage.evaluate(() => Object.fromEntries(
     Object.entries(localStorage).filter(([key]) => key.startsWith('sb_license:podcast-recall-loop'))
   ));
@@ -159,8 +170,10 @@ try {
   assert(verdict.valid === true && verdict.checkedAt >= beforeVerification && verdict.checkedAt <= Date.now(), 'The stored verdict is invalid.');
   await licensePage.goto(`${baseUrl}/privacy`, { waitUntil: 'networkidle' });
   await licensePage.getByText('This app stores your license token and its daily verification result in this browser.').waitFor();
+  await licensePage.getByText('After you restore a license, the app automatically checks the stored license at most once each day.').waitFor();
   await licensePage.screenshot({ path: `${evidenceDir}/live-privacy-desktop.png`, fullPage: true });
   report.findings.licenseStorage = { keys: Object.keys(licenseStorage).sort(), verdictFields: Object.keys(verdict).sort(), privacyCopy: true };
+  report.findings.licenseNetworkWording = { automaticDailyScope: true, explicitVerificationRequests };
   await licenseContext.close();
 
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -190,7 +203,7 @@ try {
     const footer = desktop.locator('footer.site-footer');
     await footer.getByRole('link', { name: 'Privacy' }).waitFor();
     await footer.getByRole('link', { name: 'Terms' }).waitFor();
-    await footer.getByText('Version 1.0.7', { exact: true }).waitFor();
+    await footer.getByText('Version 1.0.8', { exact: true }).waitFor();
     assert(!(await footer.innerText()).includes('design notes'), `${route} retains the inaccessible footer reference.`);
     const axe = await new AxeBuilder({ page: desktop }).analyze();
     const serious = axe.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''));
