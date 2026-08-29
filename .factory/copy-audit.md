@@ -19,6 +19,12 @@ Audited 29 August 2026. Counts treat hyphenated terms, prices, versions, and nav
 
 Read-aloud check: the headline, audience sentence, primary action, and result state the job and first step in one breath. At 390×844, the action and all three facts end at 701 px without scrolling.
 
+## Privacy correction
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| This app stores your license token and its daily verification result in this browser. | 14 | Pass; `license-storage` verifies the exact keys and verdict fields |
+
 ## Remaining landing page
 
 | Copy | Words | Result |

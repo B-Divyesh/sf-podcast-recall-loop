@@ -1,0 +1,28 @@
+{
+  "commit": "3e18e76afe39204938f76fcceaf3be5729999577",
+  "environment": "fresh git clone followed by npm ci",
+  "playwright": {
+    "command": "npm test",
+    "passed": 88,
+    "failed": 0,
+    "projects": ["chromium", "mobile-390x844"]
+  },
+  "unit": {
+    "command": "npm run test:unit",
+    "passed": 16,
+    "failed": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "status": "pass",
+    "distIndex": true,
+    "javascriptRawKb": 31.51,
+    "javascriptGzipKb": 10.88,
+    "cssRawKb": 14.18,
+    "cssGzipKb": 4.20
+  },
+  "audit": {
+    "command": "npm audit --audit-level=high",
+    "vulnerabilities": 0
+  }
+}

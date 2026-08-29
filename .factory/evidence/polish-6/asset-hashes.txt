@@ -1,0 +1,12 @@
+Deployed product commit: 3e18e76afe39204938f76fcceaf3be5729999577
+Deployment ID: 9c2bfe81-6353-4bc2-83f0-4e598c50e5ac
+
+JavaScript local: 4a49a2db8fbcfd12485103d41a4cf0c783f468cf828d7f1bd2517c5f4cc09775  dist/assets/index-DzFamtYO.js
+JavaScript live:  4a49a2db8fbcfd12485103d41a4cf0c783f468cf828d7f1bd2517c5f4cc09775  https://podcast-recall-loop.sociobot.in/assets/index-DzFamtYO.js
+CSS local:        0fe67a484500db387d9f8fa012dddb5262beae4480df82037febdbf270d14078  dist/assets/index-CB1EBUkx.css
+CSS live:         0fe67a484500db387d9f8fa012dddb5262beae4480df82037febdbf270d14078  https://podcast-recall-loop.sociobot.in/assets/index-CB1EBUkx.css
+Worker local:     4cce30de2e031226294531e26ccbb6d6d45c385985111bdcb9eecb343b58eefe  dist/sw.js
+Worker live:      4cce30de2e031226294531e26ccbb6d6d45c385985111bdcb9eecb343b58eefe  https://podcast-recall-loop.sociobot.in/sw.js
+
+JavaScript gzip: 10,820 bytes
+CSS gzip: 4,209 bytes

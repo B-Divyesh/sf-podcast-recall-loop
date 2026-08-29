@@ -1,0 +1,14 @@
+{
+  "url": "https://podcast-recall-loop.sociobot.in/?demo=1&cold=polish6",
+  "loadMs": 966,
+  "errors": [],
+  "a11y": {
+    "title": "Demo — Podcast Recall Loop",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1744
+  }
+}
