@@ -1,127 +1,61 @@
-# Podcast Recall Loop — repair 4 handoff
+# Podcast Recall Loop — independent verification 9 handoff
 
 ## Outcome
 
-**PASS.** Repair commit `6e3e62b78f681465219fe6c5902a6a2afbb97345` is pushed to
-`main` and deployed to <https://podcast-recall-loop.sociobot.in>.
+**PASS.** Candidate `b3e2c6a6a2f72b2b31801feab83ccce04651f7f5` is accepted
+for release at <https://podcast-recall-loop.sociobot.in>.
 
-This repairs the sole release blocker in the independent verification of
-candidate `a52afadee0cec2fac9d7518b2ed3f25e30d05eb1`:
-[`verification-8.md`](verification-8.md). The researched brief, local-first
-PWA class, demo isolation, paid-license path, and passed product behavior were
-preserved.
+The live HTML, JS, CSS, service worker, and manifest exactly match the fresh
+production build. The earlier malformed-backup data-loss defect from
+[`verification-8.md`](verification-8.md) is repaired: a parseable invalid
+backup is rejected before mutation, a saved note survives reload, and the page
+does not error.
 
-## Repair
+## What was verified
 
-The import handler had checked only for a `clips` array. It saved
-`{"clips":[{}]}` before rendering exposed the missing fields, so a rejected
-backup could overwrite an existing library and cause a blank app after reload.
+- All 27 entries in `.factory/claims.json` passed, including demo isolation,
+  offline reload, exports/backups, RSS/Atom parsing, no-account/local privacy,
+  license flows, and build-coupled service-worker updates.
+- `npm test` passed (82 Playwright tests); `npm run test:unit` passed (15/15
+  Vitest tests); `npm run build` passed (`tsc --noEmit`, Vite, service-worker
+  finalizer) and produced `dist/`.
+- Cold live-page copy passes the first-read gate and exposes one-click **Try it
+  with sample data**. The demo has five sample clips, three due questions, a
+  persistent isolation banner, and Reset returns it to the seeded state.
+- Desktop and 390px mobile capture/review flows, invalid timestamp/feed
+  recovery, malformed-backup recovery, keyboard focus, reduced motion, PWA
+  offline reload, and visible focus were checked independently.
+- Live request logging found only same-origin traffic during normal note and
+  demo actions. No sign-in is used. The Sociobot verifier permits 30 requests
+  per client window, then sends `429` with `Retry-After`.
+- `verify-url.sh` and live Axe scans passed; all six checked routes have one
+  `h1`, a `main`, correct titles/lang, no console/page errors, and zero
+  serious/critical Axe findings. The current Lighthouse report is 98
+  performance and 100 accessibility/best-practices/SEO.
+- Initial JS is 31,528 B raw / 10,835 B gzip; CSS is 14,177 B raw / 4,205 B
+  gzip. Hashed assets are immutable, HTML revalidates, and `sw.js` is
+  no-cache.
 
-- `validateImportedState` now validates every saved clip field and type,
-  optional daily queue, seed flag, date values, result values, and duplicate
-  identifiers. It creates a fresh validated state rather than trusting the
-  parsed object.
-- Import validates first, writes the validated candidate, and only then swaps
-  the in-memory state. A parse, schema, or persistence failure leaves the
-  visible and stored library unchanged.
-- State loading also rejects an already malformed persisted state, so an old
-  corrupt database opens as a usable empty library rather than a blank page.
-- Added a unit schema regression and the `invalid-backup-recovery` executable
-  claim. It saves a real clip, imports the verifier's parseable
-  `{"clips":[{}]}` fixture, checks the rejection, reloads, and checks that the
-  clip remains with no page error. The README and claims manifest now state
-  this behavior.
+Full commands, artifact SHA-256 values, exact claim results, live header
+evidence, and the one non-product Lighthouse runner warning are recorded in
+[`verification-9.md`](verification-9.md).
 
-An already-overwritten library from the rejected build cannot recover its
-previous note because the bad database contains no copy of it. This release
-does prevent repeat loss and recovers the application shell instead of leaving
-it blank.
-
-## Verification
-
-### Clean local checks
-
-```text
-npm ci                         PASS — 61 packages, 0 vulnerabilities
-npm run test:unit              PASS — 15/15 Vitest tests
-npm test                       PASS — 82/82 Playwright tests, desktop + 390px
-all claims.json commands       PASS — 27/27 entries, 0 failures
-npm run build                  PASS — tsc --noEmit, Vite, finalized dist/
-```
-
-There is no separate lint script; type checking is part of `npm run build`.
-The final build is 31.53 KB raw / 10.89 KB gzip JavaScript and 14.18 KB raw /
-4.20 KB gzip CSS. Package/consumer testing is not applicable to this static
-PWA.
-
-The browser suite covered the demo and real flows, malformed syntax and
-wrong-shape backup recovery, RSS/Atom lookup, browser persistence, downloads,
-license fixtures, keyboard navigation, reduced motion, mobile width, service
-worker update code, and privacy request logging. The new exact regression also
-passed independently in both configured projects.
-
-### Deployment and live checks
-
-Static deployment completed through `/opt/fleet/lib/deploy-static.sh`:
-
-```text
-Deployment ID: 7eb96c76-0ea7-413e-adb8-70e1a66795d3
-Static app:    sf-podcast-recall-loop (centralus)
-Live URL:      https://podcast-recall-loop.sociobot.in
-```
-
-The deployed production artifacts exactly match the final local build:
-
-| Artifact | SHA-256 |
-| --- | --- |
-| `index.html` | `72b0bbace67d157ecfde4402a616c341cda43f7ac9808c281fcc2a912272a210` |
-| `assets/index-CQObdu8s.js` | `c46f5a91af73206778d4b1b285bcf5dac615e2cb07a728f09cce05b9d7e6204a` |
-| `assets/index-CB1EBUkx.css` | `0fe67a484500db387d9f8fa012dddb5262beae4480df82037febdbf270d14078` |
-| `sw.js` | `adf5c94fa1430d1b954f95da025db791cbc943e487bd9cdb40ae79a7a7e7d526` |
-| `manifest.webmanifest` | `ddb62c03a08c126a72cf88baecd1aded25308a2823b4c60c62191d0ad953e05b` |
-
-- `verify-url.sh` passed against live `/` and `/demo`; each has the expected
-  title, `lang`, one `h1`, one `main`, complete image alt text, and no console
-  errors. See [home evidence](evidence/repair-4/live-home/verify.json) and
-  [demo evidence](evidence/repair-4/live-demo/verify.json).
-- A live Playwright/Axe sweep across `/`, `/demo`, `/app`, `/privacy`,
-  `/terms`, and `/missing-page`, on desktop and 390×844 mobile, produced 12
-  scans with zero serious/critical violations and zero page errors. Mobile had
-  no horizontal overflow.
-- Live keyboard smoke passed: Tab reaches Skip to main content; Enter focuses
-  `main`; keyboard demo navigation focuses the new `h1`; Enter on Reveal moves
-  focus to the takeaway.
-- The live demo became service-worker controlled, then reloaded offline at
-  390px with the recall heading present. Its reveal/review flow made only
-  same-origin requests.
-- The live verifier reproduced the original malformed fixture after deployment:
-  it announced the rejection, retained two visible copies of the saved clip
-  (review + library) before and after reload, and emitted no page errors.
-- `/`, `/demo`, `/app`, `/privacy`, `/terms`, manifest, worker, hashed JS, and
-  hashed CSS return 200; `/missing-page` returns the designed HTTP 404.
-- Live headers include HSTS, `nosniff`, strict-origin referrer policy,
-  permissions policy, CSP with `frame-ancestors 'none'`, immutable one-year
-  caching for hashed assets, and no-cache service-worker updates. The manifest
-  is `application/manifest+json`.
-- The Sociobot checkout endpoint returned 303 to hosted checkout. An invalid
-  license verification returned 200 `{ "valid": false }` with the production
-  origin's CORS allowance. No raw payment-provider link appears in the app.
-- Mobile Lighthouse was 100 performance, 100 accessibility, 100 best
-  practices, and 100 SEO; LCP 1.0 s, CLS 0, TBT 40 ms, interactive 1.1 s. Raw
-  report: [lighthouse-mobile.json](evidence/repair-4/lighthouse-mobile.json).
-
-## Run and deploy
+## Run and verify
 
 ```sh
 npm ci
-npm run test:unit
 npm test
+npm run test:unit
 npm run build
-/opt/fleet/lib/deploy-static.sh podcast-recall-loop dist
 ```
+
+Use `https://podcast-recall-loop.sociobot.in/demo` (or `/?demo=1`) for the
+isolated sample flow.
 
 ## Known gaps / next steps
 
-No release-blocking gaps remain. Keep the normal factory deployment smoke
-check after future releases, especially offline reload and a malformed-backup
-attempt, because IndexedDB recovery is central to the product's promise.
+No release-blocking gaps remain. A real old-build-to-new-build service-worker
+replacement cannot be observed without a second deployed build; the current
+worker update check and the passing build-coupled update regression cover it.
+On future releases, repeat offline reload and malformed-backup recovery smoke
+checks.
