@@ -68,4 +68,10 @@ describe('release regressions', () => {
     expect(css).toContain('prefers-color-scheme: dark');
     expect(css).toContain('min-height: 44px');
   });
+
+  test('documents the supported Node versions precisely', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+    expect(pkg.engines.node).toBe('^20.19.0 || >=22.12.0');
+    expect(readFileSync('README.md', 'utf8')).toContain('Requires Node.js 20.19+ or 22.12+.');
+  });
 });

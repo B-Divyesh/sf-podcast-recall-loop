@@ -46,7 +46,7 @@
     "claim": "The daily recall queue presents no more than three due questions",
     "where": "landing, app heading, README",
     "test": "npm test -- --grep @claim:daily-three",
-    "sandbox": "fresh /demo sample with five clips; assert three due items can be completed and the queue is caught up"
+    "sandbox": "fresh /demo sample with all five clips made overdue before the daily snapshot; complete three, reload into the caught-up state, then advance the stored local day and assert the two deferred clips appear"
   },
   {
     "id": "csv-export",
@@ -78,10 +78,10 @@
   },
   {
     "id": "local-privacy",
-    "claim": "The demo recall flow sends no note data or tracking requests to another origin",
+    "claim": "Saved note flows send no note data or tracking requests to another origin",
     "where": "landing privacy facts, privacy page, README",
     "test": "npm test -- --grep @claim:local-privacy",
-    "sandbox": "fresh /demo sample; observe every request while revealing and answering a question and assert all are same-origin"
+    "sandbox": "fresh /app library; observe every request while saving, reloading, exporting, importing, and deleting a real note, then assert all are same-origin"
   },
   {
     "id": "no-account",

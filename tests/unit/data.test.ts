@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { formatTimestamp, parseTimestamp, toCsv, toMarkdown } from '../../src/data';
+import { completeDailyQueueItem, dailyQueue, formatTimestamp, parseTimestamp, toCsv, toMarkdown } from '../../src/data';
 import { sampleClips } from '../../src/sample';
 
 describe('recall data helpers', () => {
@@ -20,5 +20,21 @@ describe('recall data helpers', () => {
     expect(csv).toContain('"Why retrieval beats rereading"');
     const markdown = toMarkdown(sampleClips);
     expect(markdown.match(/^## /gm)).toHaveLength(sampleClips.length);
+  });
+
+  test('keeps a three-item daily snapshot until the local day changes', () => {
+    const state = { clips: structuredClone(sampleClips) };
+    state.clips.forEach(clip => { clip.dueAt = '2020-01-01T08:00:00.000Z'; });
+    const first = dailyQueue(state, new Date('2026-08-29T12:00:00'));
+    expect(first.clips).toHaveLength(3);
+    expect(first.queue?.clipIds).toHaveLength(3);
+    completeDailyQueueItem(state, first.clips[0]!.id);
+    completeDailyQueueItem(state, first.clips[1]!.id);
+    completeDailyQueueItem(state, first.clips[2]!.id);
+    state.clips
+      .filter(clip => first.queue?.clipIds.includes(clip.id))
+      .forEach(clip => { clip.dueAt = '2099-01-01T08:00:00.000Z'; });
+    expect(dailyQueue(state, new Date('2026-08-29T18:00:00')).clips).toHaveLength(0);
+    expect(dailyQueue(state, new Date('2026-08-30T08:00:00')).clips).toHaveLength(2);
   });
 });

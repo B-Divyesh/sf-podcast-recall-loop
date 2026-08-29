@@ -130,11 +130,59 @@ test('@claim:atom-lookup an Atom feed fills podcast, episode, and link fields', 
 
 test('@claim:daily-three daily recall presents no more than three due questions', async ({ page }) => {
   await page.goto('/demo');
+  await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop-demo');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const state = await new Promise<{ clips: Array<{ dueAt: string }>; dailyQueue?: unknown }>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    state.clips.forEach(clip => { clip.dueAt = '2020-01-01T08:00:00.000Z'; });
+    delete state.dailyQueue;
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction('workspace', 'readwrite');
+      transaction.objectStore('workspace').put(state, 'state');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  await page.reload();
+  await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
   for (let index = 0; index < 3; index += 1) {
     await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
     await page.getByRole('button', { name: 'I remembered' }).click();
+    if (index < 2) await expect(page.getByText(`Question ${index + 2} of 3 today`)).toBeVisible();
   }
-  await expect(page.getByRole('heading', { name: 'You are caught up' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'You are caught up for today' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'You are caught up for today' })).toBeVisible();
+  await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop-demo');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const state = await new Promise<{ dailyQueue: { day: string } }>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    state.dailyQueue.day = '2000-01-01';
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction('workspace', 'readwrite');
+      transaction.objectStore('workspace').put(state, 'state');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  await page.reload();
+  await expect(page.getByText('Question 1 of 2 today')).toBeVisible();
 });
 
 test('@claim:csv-export exports five saved clips as CSV', async ({ page }) => {
@@ -179,14 +227,25 @@ test('@claim:free-reviews-exports reviews and CSV exports work without a license
   expect(content).toContain('podcast,episode,timestamp,prompt,takeaway,due_date,reviews');
 });
 
-test('@claim:local-privacy the demo recall flow sends no note data to another origin', async ({ page }) => {
+test('@claim:local-privacy saved note flows send no note data or tracking requests to another origin', async ({ page }) => {
   const external: string[] = [];
   page.on('request', request => {
     if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url());
   });
-  await page.goto('/demo');
-  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
-  await page.getByRole('button', { name: 'I remembered' }).click();
+  await page.goto('/app');
+  await saveClip(page, 'What stays private across every note action?');
+  await page.reload();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export backup' }).click();
+  const content = await readDownload((await downloadPromise).createReadStream());
+  await page.locator('#import-file').setInputFiles({
+    name: 'podcast-recall-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(content)
+  });
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Delete question: What stays private across every note action?' }).click();
+  await expect(page.getByText('No clips yet. Saved questions will appear here.')).toBeVisible();
   expect(external).toEqual([]);
 });
 

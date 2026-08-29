@@ -1,4 +1,4 @@
-import type { AppState, Clip } from './types';
+import type { AppState, Clip, DailyQueue } from './types';
 import { sampleState } from './sample';
 
 const DB_VERSION = 1;
@@ -50,9 +50,61 @@ export async function resetDemo(): Promise<void> {
   });
 }
 
-export function dueClips(clips: Clip[]): Clip[] {
-  const now = Date.now();
-  return clips.filter(clip => new Date(clip.dueAt).getTime() <= now).sort((a, b) => a.dueAt.localeCompare(b.dueAt)).slice(0, 3);
+export type DailyQueueView = {
+  queue?: DailyQueue;
+  clips: Clip[];
+  completed: number;
+  changed: boolean;
+};
+
+function localDay(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function overdueClips(clips: Clip[], now: Date): Clip[] {
+  return clips
+    .filter(clip => new Date(clip.dueAt).getTime() <= now.getTime())
+    .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+}
+
+/**
+ * Selects a maximum of three due clips once per local day. The snapshot is
+ * retained after answers so an overdue backlog never refills mid-session.
+ */
+export function dailyQueue(state: AppState, now = new Date()): DailyQueueView {
+  const day = localDay(now);
+  let changed = false;
+  if (!state.dailyQueue || state.dailyQueue.day !== day) {
+    const clipIds = overdueClips(state.clips, now).slice(0, 3).map(clip => clip.id);
+    state.dailyQueue = clipIds.length ? { day, clipIds, completedIds: [] } : undefined;
+    changed = true;
+  }
+
+  const queue = state.dailyQueue;
+  if (!queue) return { clips: [], completed: 0, changed };
+
+  const validIds = new Set(state.clips.map(clip => clip.id));
+  const knownCompleted = queue.completedIds.filter(id => queue.clipIds.includes(id) && validIds.has(id));
+  if (knownCompleted.length !== queue.completedIds.length) {
+    queue.completedIds = knownCompleted;
+    changed = true;
+  }
+  const completed = new Set(queue.completedIds);
+  const clips = queue.clipIds
+    .filter(id => !completed.has(id))
+    .map(id => state.clips.find(clip => clip.id === id))
+    .filter((clip): clip is Clip => Boolean(clip));
+  return { queue, clips, completed: queue.completedIds.length, changed };
+}
+
+/** Records an answered or removed prompt without allowing the queue to refill. */
+export function completeDailyQueueItem(state: AppState, clipId: string): void {
+  const queue = state.dailyQueue;
+  if (!queue || !queue.clipIds.includes(clipId) || queue.completedIds.includes(clipId)) return;
+  queue.completedIds.push(clipId);
 }
 
 export function scheduleClip(clip: Clip, result: 'remembered' | 'sooner'): Clip {

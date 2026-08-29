@@ -1,5 +1,5 @@
 import './styles.css';
-import { dueClips, formatTimestamp, loadState, parseTimestamp, resetDemo, saveState, scheduleClip, toCsv, toMarkdown } from './data';
+import { completeDailyQueueItem, dailyQueue, formatTimestamp, loadState, parseTimestamp, resetDemo, saveState, scheduleClip, toCsv, toMarkdown, type DailyQueueView } from './data';
 import { acceptLicenseFromUrl, buyUrl, cachedUnlocked, restoreLicense, verifyLicense } from './license';
 import type { AppState, Clip, Episode } from './types';
 
@@ -10,6 +10,7 @@ let demo = false;
 let revealedId = '';
 let online = navigator.onLine;
 let licenseInactive = false;
+let todayQueue: DailyQueueView = { clips: [], completed: 0, changed: false };
 
 type NavigationState = { scrollY?: number };
 
@@ -83,7 +84,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.4 · Generated art disclosed in the design notes.</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.5 · Generated art disclosed in the design notes.</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -98,7 +99,7 @@ function landing(): string {
         <a class="quiet-link" href="/app" data-link>Add a podcast feed →</a>
         <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
       </div>
-      <figure class="hero-art"><picture><source media="(max-width: 600px)" srcset="/assets/recall-ceramics-small.webp"><img src="/assets/recall-ceramics.webp" width="1100" height="733" alt="Three porcelain pieces arranged in a quiet recall loop." decoding="async" fetchpriority="high"></picture><figcaption>Save. Ask. Recall.</figcaption></figure>
+      <figure class="hero-art"><picture><source media="(max-width: 600px)" srcset="/assets/recall-ceramics-small.webp"><img src="/assets/recall-ceramics.webp" width="1100" height="733" alt="Three porcelain pieces arranged in a quiet recall loop." decoding="async" fetchpriority="high"></picture><figcaption>Save a podcast moment. Write a question. Recall it later.</figcaption></figure>
     </section>
     <section class="preview-section" aria-labelledby="preview-title">
       <div><p class="eyebrow">Today’s recall</p><h2 id="preview-title">Write your own recall question</h2><p>You write the question while the idea is fresh. The recall queue brings it back later.</p></div>
@@ -110,11 +111,12 @@ function landing(): string {
 }
 
 function reviewMarkup(): string {
-  const due = dueClips(state.clips);
-  if (!due.length) return `<section class="empty-state"><div class="ceramic-dot" aria-hidden="true"></div><h2>You are caught up</h2><p>Your next questions will appear here when they are due.</p><a class="button secondary" href="#capture">Add another clip</a></section>`;
+  const due = todayQueue.clips;
+  if (!due.length) return `<section class="empty-state"><div class="ceramic-dot" aria-hidden="true"></div><h2>You are caught up for today</h2><p>Your next questions will appear here when they are due.</p><a class="button secondary" href="#capture">Add another clip</a></section>`;
   const clip = due[0]!;
-  const index = Math.min(3, state.clips.filter(item => item.reviewCount > 0).length + 1);
-  return `<section class="review-zone" aria-labelledby="review-title"><div class="review-heading"><div><p class="eyebrow">Question ${index} of up to 3 today</p><h2 id="review-title">Recall before you reveal</h2></div><p>${due.length} due now</p></div>
+  const index = todayQueue.completed + 1;
+  const total = todayQueue.queue?.clipIds.length || due.length;
+  return `<section class="review-zone" aria-labelledby="review-title"><div class="review-heading"><div><p class="eyebrow">Question ${index} of ${total} today</p><h2 id="review-title">Recall before you reveal</h2></div><p>${due.length} due now</p></div>
     <article class="prompt-card active-card" data-clip-id="${escapeHtml(clip.id)}"><p class="timestamp">${formatTimestamp(clip.timestampSec)} · ${escapeHtml(clip.podcast)}</p><h3>${escapeHtml(clip.prompt)}</h3>
     ${revealedId === clip.id ? `<div class="revealed" tabindex="-1"><p class="answer-label">Your takeaway</p><p>${escapeHtml(clip.takeaway)}</p></div><div class="review-actions"><button class="button secondary" data-action="review-sooner" data-id="${escapeHtml(clip.id)}">Review sooner</button><button class="button primary" data-action="review-remembered" data-id="${escapeHtml(clip.id)}">I remembered</button></div>` : `<button class="button primary reveal" data-action="reveal" data-id="${escapeHtml(clip.id)}">Reveal my takeaway</button>`}
     <footer><span>${escapeHtml(clip.episode)}</span>${safeUrl(clip.episodeUrl) ? `<a href="${safeUrl(clip.episodeUrl)}" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Open episode ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a>` : ''}</footer></article></section>`;
@@ -127,7 +129,7 @@ function libraryMarkup(): string {
 
 function appPage(): string {
   const unlocked = !demo && cachedUnlocked();
-  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${dueClips(state.clips).length} questions due"><strong>${dueClips(state.clips).length}</strong><span>due</span></div></div>
+  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${todayQueue.clips.length} questions due"><strong>${todayQueue.clips.length}</strong><span>due</span></div></div>
     ${reviewMarkup()}
     <section id="capture" class="capture" aria-labelledby="capture-title"><div class="section-heading"><div><p class="eyebrow">Capture a moment</p><h2 id="capture-title">Write the question only you need</h2></div><p>${unlocked ? 'Unlimited clips active.' : `${Math.max(0, 8 - state.clips.length)} of 8 free clip spaces remain.`}</p></div>
       <form id="feed-form" class="feed-form"><label for="feed-url">Podcast feed address</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">Paste the show’s feed address. If you do not have it, enter the podcast and episode below.</p><p class="field-help">The app contacts the feed address only after you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>
@@ -155,7 +157,14 @@ async function render(announce = true): Promise<void> {
   const viewPath = demo ? '/demo' : path;
   setRouteMetadata(viewPath === '/demo' ? '/demo' : path);
   if (viewPath === '/demo' || viewPath === '/app') {
-    try { state = await loadState(demo); } catch { state = { clips: [] }; }
+    try {
+      state = await loadState(demo);
+      todayQueue = dailyQueue(state);
+      if (todayQueue.changed) await saveState(demo, state);
+    } catch {
+      state = { clips: [] };
+      todayQueue = { clips: [], completed: 0, changed: false };
+    }
     app.innerHTML = appPage();
   } else if (path === '/') app.innerHTML = landing();
   else if (path === '/privacy') app.innerHTML = privacy();
@@ -251,7 +260,7 @@ function bindForms(): void {
       prompt: String(data.get('prompt') || '').trim(), takeaway: String(data.get('takeaway') || '').trim(), createdAt: new Date().toISOString(), dueAt: new Date().toISOString(), intervalDays: 1, reviewCount: 0
     };
     if (!clip.podcast || !clip.episode || !clip.prompt || !clip.takeaway) { status.textContent = 'Complete every required field, then save again.'; return; }
-    state.clips.push(clip); await saveState(demo, state); form.reset(); revealedId = ''; await render(false); showToast('Recall question saved. It is due now.');
+    state.clips.push(clip); dailyQueue(state); await saveState(demo, state); form.reset(); revealedId = ''; await render(false); showToast('Recall question saved.');
   });
 
   document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', async event => {
@@ -288,11 +297,11 @@ document.addEventListener('click', async event => {
   const action = target.dataset.action;
   if (action === 'reveal') { revealedId = target.dataset.id || ''; await render(false); document.querySelector<HTMLElement>('.revealed')?.focus(); }
   if (action === 'review-remembered' || action === 'review-sooner') {
-    const id = target.dataset.id; state.clips = state.clips.map(clip => clip.id === id ? scheduleClip(clip, action === 'review-remembered' ? 'remembered' : 'sooner') : clip); revealedId = ''; await saveState(demo, state); await render(false); showToast(action === 'review-remembered' ? 'Saved. This question will return later.' : 'Saved. This question will return tomorrow.');
+    const id = target.dataset.id; state.clips = state.clips.map(clip => clip.id === id ? scheduleClip(clip, action === 'review-remembered' ? 'remembered' : 'sooner') : clip); if (id) completeDailyQueueItem(state, id); revealedId = ''; await saveState(demo, state); await render(false); showToast(action === 'review-remembered' ? 'Saved. This question will return later.' : 'Saved. This question will return tomorrow.');
   }
   if (action === 'delete') {
     const clip = state.clips.find(item => item.id === target.dataset.id); if (!clip || !confirm(`Delete “${clip.prompt}”? This cannot be undone.`)) return;
-    state.clips = state.clips.filter(item => item.id !== clip.id); await saveState(demo, state); await render(false); showToast('Question deleted.');
+    state.clips = state.clips.filter(item => item.id !== clip.id); completeDailyQueueItem(state, clip.id); await saveState(demo, state); await render(false); showToast('Question deleted.');
   }
   if (action === 'export-csv') download('podcast-recall-clips.csv', 'text/csv', toCsv(state.clips));
   if (action === 'export-md') download('podcast-recall-clips.md', 'text/markdown', toMarkdown(state.clips));

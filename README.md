@@ -20,11 +20,11 @@ The app stores written notes in this browser. It stores no audio. The demo at `?
 
 ## Try the isolated demo
 
-Open `http://localhost:4173/?demo=1` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. Every link that leaves the demo discards its changes. **Start for real** opens the separate, empty library.
+Open `http://localhost:4173/?demo=1` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. Every link that leaves the demo discards its changes. **Start for real** discards demo changes and opens your separate real library.
 
 ## Develop
 
-Requires Node.js 20 or newer.
+Requires Node.js 20.19+ or 22.12+.
 
 ```sh
 npm install

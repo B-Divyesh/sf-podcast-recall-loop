@@ -106,15 +106,21 @@ test('reduced motion removes scrolling and visible movement', async ({ page }) =
   expect(styles.scrollBehavior).toBe('auto');
 });
 
-test('@claim:demo-seed-reset demo starts with five sample clips and reset restores all three due questions', async ({ page }) => {
+test('@claim:demo-seed-reset demo starts at question one and reset restores the five-clip queue', async ({ page }) => {
   await page.goto('/demo');
   await expect(page.getByText('5 saved clips.')).toBeVisible();
   await expect(page.getByLabel('3 questions due')).toBeVisible();
-  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
-  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
+  for (let index = 0; index < 3; index += 1) {
+    await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+    await page.getByRole('button', { name: 'I remembered' }).click();
+    if (index < 2) await expect(page.getByText(`Question ${index + 2} of 3 today`)).toBeVisible();
+  }
+  await expect(page.getByRole('heading', { name: 'You are caught up for today' })).toBeVisible();
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByText('5 saved clips.')).toBeVisible();
   await expect(page.getByLabel('3 questions due')).toBeVisible();
+  await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
 });
 
 test('@claim:existing-license a returned license is stored, stripped, and verified once per day', async ({ page }) => {

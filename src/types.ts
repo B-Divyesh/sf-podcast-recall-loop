@@ -16,6 +16,13 @@ export interface Clip {
   lastResult?: RecallResult;
 }
 
+/** A locally dated, fixed set of questions for one day of recall. */
+export interface DailyQueue {
+  day: string;
+  clipIds: string[];
+  completedIds: string[];
+}
+
 export interface Episode {
   title: string;
   url: string;
@@ -24,5 +31,6 @@ export interface Episode {
 
 export interface AppState {
   clips: Clip[];
+  dailyQueue?: DailyQueue;
   seeded?: boolean;
 }
