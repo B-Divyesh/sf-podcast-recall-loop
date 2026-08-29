@@ -1,0 +1,85 @@
+{
+  "origin": "https://podcast-recall-loop.sociobot.in",
+  "checkedAt": "2026-08-29T06:01:26.949Z",
+  "routes": {
+    "/": {
+      "status": 200,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "canonical": "https://podcast-recall-loop.sociobot.in/",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    },
+    "/demo": {
+      "status": 200,
+      "title": "Demo — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/demo",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    },
+    "/app": {
+      "status": 200,
+      "title": "Recall queue — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/app",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    },
+    "/privacy": {
+      "status": 200,
+      "title": "Privacy — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/privacy",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    },
+    "/terms": {
+      "status": 200,
+      "title": "Terms — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/terms",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    },
+    "/missing-page": {
+      "status": 404,
+      "title": "Page not found — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "h1": 1,
+      "seriousCriticalAxe": 0
+    }
+  },
+  "firstScreen": {
+    "title": "Podcast Recall Loop — Remember podcast ideas",
+    "h1": "Remember what your podcasts taught you",
+    "audience": "For curious listeners who save good moments but forget the ideas.",
+    "demoHref": "/?demo=1",
+    "facts": [
+      "Notes stay in this browser.",
+      "Reviews work offline after your first visit.",
+      "The free library holds eight clips."
+    ],
+    "overflow": false
+  },
+  "demo": {
+    "url": "https://podcast-recall-loop.sociobot.in/?demo=1",
+    "banner": true,
+    "resetRestoredFiveClipsAndThreeDue": true
+  },
+  "feeds": {
+    "zeroRequestsBeforeAction": true,
+    "oneRequestAfterAction": 1,
+    "atom": {
+      "requests": 1,
+      "podcast": "Atom Learning",
+      "episode": "An Atom episode",
+      "link": "https://example.test/atom-episode"
+    }
+  },
+  "history": {
+    "beforeY": 1200,
+    "afterY": 1200,
+    "focusedHeading": true
+  },
+  "offline": {
+    "notice": true,
+    "recallAction": true,
+    "title": "Demo — Podcast Recall Loop"
+  }
+}

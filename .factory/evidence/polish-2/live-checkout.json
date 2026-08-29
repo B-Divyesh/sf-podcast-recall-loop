@@ -1,0 +1,7 @@
+{
+  "endpointStatus": 200,
+  "finalOrigin": "https://checkout.dodopayments.com",
+  "hasProduct": true,
+  "hasNineDollars": true,
+  "hasOneTime": true
+}
