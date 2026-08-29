@@ -1,31 +1,42 @@
-# Podcast Recall Loop — adversarial review 1 handoff
+# Podcast Recall Loop — polish round 1 handoff
 
 ## Outcome
 
-**FAIL.** The full report is in [`.factory/review-1.md`](review-1.md). Product code was not modified.
+**PASS.** Repair commit `9831c19650d7a3fd9f738cc3f0f7c2f86a989a9e` repairs every blocking and minor finding in `.factory/review-1.md` and rechecks the earlier verification trail. The deployed static artifact is live at <https://podcast-recall-loop.sociobot.in>.
 
-The first-read, core recall workflow, offline path, accessibility baseline, live RSS lookup, routing, 404, link crawl, and visual identity passed. The review records four blocking findings: demo mode shares real license storage, demo changes survive leaving the demo, demo seed/reset promises are missing from the claims registry, and the `$9` claim test does not assert the checkout amount or billing mode. Eight minor copy, route-metadata, and missed-leverage findings also remain.
+## What changed
 
-## Verification performed
+- Isolated demo licensing completely from the real browser namespace, including direct `?demo=1` / `?license=` entry; leaving the demo destroys its sample workspace.
+- Added seed/reset, answer-based scheduling, and daily calendar reminder claims with observable tests.
+- Strengthened the $9 one-time checkout fixture to verify product, currency, billing mode, and cents.
+- Published static per-route metadata shells and runtime metadata updates for demo, app, legal routes, and 404.
+- Rewrote first-screen, feed, license, README, legal, and product copy in plain language.
+- Preserved the glacial-ceramic visual system, generated art, local-first PWA architecture, and static deployment class.
 
-- Opened production in fresh Chromium contexts at 390×844 and 1440×900.
-- Exercised the one-click demo, reveal/review, Reset, Start for real, return-to-demo, storage namespaces, request logging, service-worker control, and offline reload.
-- Proved that `/demo` reads real license state and `/demo?license=…` writes real token/verdict keys while the demo banner is visible.
-- Ran all 21 commands in `.factory/claims.json` independently and in order from a clean local clone; every command exited successfully.
-- Ran `npm run test:unit` (9 passed), `npm test` (68 passed), `npm run build` (produced `dist/`), and `npm audit --audit-level=high` (zero vulnerabilities).
-- Ran live Axe checks on `/`, `/demo`, `/app`, `/privacy`, `/terms`, and a 404 at mobile and desktop widths; zero serious/critical findings.
-- Ran `/opt/fleet/lib/verify-url.sh` against production; it passed.
-- Crawled visible links and inspected titles, metadata, canonical URLs, OG image dimensions, headers, focus after navigation/Back, and the live checkout redirect/page.
-- Re-read all prior verification reports and the prior handoff and rechecked every historical defect.
+## Exact verification
 
-## Reproduce the blockers
+Fresh clone: `/tmp/podcast-recall-clean-TSbqdp` at repair commit `9831c19`.
 
-1. Seed `sb_license:podcast-recall-loop` and a valid cached verdict in `localStorage`, then open `/demo`; it displays **Unlimited clips active**.
-2. Open `/demo?license=demo-url-token` with the verification request fulfilled as valid; the real `sb_license:*` keys are written.
-3. In `/demo`, mark one item remembered, choose **Start for real**, then return to `/demo`; two due items remain instead of the original three.
-4. Compare the demo copy with `.factory/claims.json`; no declared `demo-seed-reset` claim exists.
-5. Inspect `tests/quality.spec.ts:102-116`; the checkout fixture contains no price, currency, product, or billing-mode assertion.
+- `npm ci`: 61 packages installed; `npm audit --audit-level=high`: 0 vulnerabilities.
+- Every one of the 24 `test` commands declared in `.factory/claims.json` was run independently and passed. Browser claims passed in desktop and 390×844 Chromium; `@claim:build-coupled-updates` passed in Vitest.
+- `npm test`: 74 passed (1.4m).
+- `npm run test:unit`: 9 passed in 2 files.
+- `npm run build`: passed; `dist/` contains root `index.html`, route shells, and 404.
+- Live deploy: `/opt/fleet/lib/deploy-static.sh podcast-recall-loop dist` completed as deployment `657513c1-eff8-424b-ac81-25542901e4e2`.
+- Cold production: `verify-url.sh` passed; route-specific mobile Axe checks on `/`, `/demo`, `/app`, `/privacy`, `/terms`, and `/missing-page` reported no serious/critical issues, no unexpected console errors, exactly one `h1` and `main`, and no horizontal overflow.
+- Live offline: service worker controlled `/demo`; after offline reload the notice and reveal action remained available.
+- Live policy: `/missing-page` is HTTP 404; checkout is HTTP 303; hashed JS is immutable-cacheable; local and live SHA-256 values match for home HTML, demo HTML, JS, and service worker.
+- Lighthouse mobile: 96 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 1.13 s, CLS 0.
 
-## Next step
+Evidence and the full finding map are in [`.factory/polish-1.md`](polish-1.md) and [`.factory/evidence/polish-1`](evidence/polish-1).
 
-Repair the twelve findings without weakening public promises, add the missing sandbox/claim regressions, deploy, and run a new adversarial review from scratch.
+## Run and deploy
+
+```sh
+npm ci
+npm test
+npm run test:unit
+npm run build
+```
+
+Deploy `dist/` with the factory static deployment work order. No known gaps remain.

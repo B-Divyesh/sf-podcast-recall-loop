@@ -1,0 +1,78 @@
+{
+  "routes": {
+    "/": {
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "canonical": "https://podcast-recall-loop.sociobot.in/",
+      "ogTitle": "Podcast Recall Loop — Remember podcast ideas",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    },
+    "/demo": {
+      "title": "Demo — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/demo",
+      "ogTitle": "Demo — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/demo",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    },
+    "/app": {
+      "title": "Recall queue — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/app",
+      "ogTitle": "Recall queue — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/app",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    },
+    "/privacy": {
+      "title": "Privacy — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/privacy",
+      "ogTitle": "Privacy — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/privacy",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    },
+    "/terms": {
+      "title": "Terms — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/terms",
+      "ogTitle": "Terms — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/terms",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    },
+    "/missing-page": {
+      "title": "Page not found — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "ogTitle": "Page not found — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "errors": [],
+      "serious": []
+    }
+  },
+  "demoIsolation": {
+    "demoBanner": true,
+    "demoUnlimited": 0,
+    "beforeEqualsAfter": true,
+    "outside": [],
+    "clips": 1,
+    "due": 1
+  }
+}
