@@ -1,24 +1,33 @@
-# Podcast Recall Loop — verification 10 handoff
+# Podcast Recall Loop — adversarial review 6 handoff
 
 ## Outcome
 
-**PASS.** Candidate `0a0979298bf2b61d675d13783e5c503145e8ce0c` is accepted for release. Fresh-checkout and live-deployment QA found no critical, high, medium, or low defects.
+**FAIL — one minor documentation/claim finding remains.** No product code was
+changed in this review. See [review-6.md](review-6.md).
 
-- Candidate: `0a0979298bf2b61d675d13783e5c503145e8ce0c`
+- Candidate: `385bfe6899a57cf055baf2aeaa63d9225c8dc945`
 - Production: <https://podcast-recall-loop.sociobot.in>
-- Verified: 29 August 2026 UTC
-- Full evidence: [verification-10.md](verification-10.md)
+- Reviewed: 29 August 2026 UTC
 
-## Verification evidence
+## What was verified
 
-- All 27 commands declared in `.factory/claims.json` were run individually from the clean checkout and passed. The final Playwright status is `passed` with no failed tests.
-- `npm test` passed (86 Playwright tests), `npm run test:unit` passed (15/15), and `npm run build` passed with TypeScript validation and `dist/` output.
-- Cold-read copy states the job, audience, and one-click sample action. The isolated demo showed five clips and three due prompts, reset correctly, kept real data isolated, and worked after offline reload.
-- The live JS (`index-BkeyvWx-.js`) and `sw.js` exactly match the fresh candidate build. The service worker controlled the app after `registration.update()` and offline reload.
-- `/opt/fleet/lib/verify-url.sh`, the six-route live browser audit, keyboard/focus and 390px checks, reduced motion, and Playwright Axe scans passed. There were zero serious/critical Axe issues and no console/page errors.
-- Request logs showed only the product origin during the demo and isolation flows; no tracking, media, audio, sign-in, or note-data egress was observed. The product has no sign-in flow.
-- Mobile Lighthouse: Performance 99, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s and CLS 0.
-- The license verifier allowed 30 requests from one client, then answered 429 with `Retry-After`.
+- Fresh mobile and desktop cold reads identify the job, audience, and one-click
+  sample action. The demo starts with five realistic clips and three due
+  questions; reset, offline reload, and real-storage isolation passed live.
+- All 27 declared claim commands passed independently after `npm ci`.
+- `npm test` passed 86 tests; `npm run test:unit` passed 15 tests; `npm run
+  build` produced `dist/`.
+- The live six-route check found one h1/main per route, correct metadata,
+  designed 404, deep links/back focus, zero serious/critical Axe findings, and
+  no normal-route console errors. Live app and service-worker bytes match the
+  fresh build.
+
+## Remaining gap
+
+F-6-1: `/privacy` says **“This app stores only your license token in this
+browser.”** The app also stores the cached daily license-verification result.
+Rewrite the sentence to name both values and add a clean-context claim test for
+that storage boundary.
 
 ## Run and verify
 
@@ -29,7 +38,3 @@ npm run test:unit
 npm run build
 node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/podcast-verify-live
 ```
-
-## Known gaps / next steps
-
-None. The standalone Selenium-based `@axe-core/cli` could not launch Chromium in this container; supported Playwright Axe integration and the six-route audit both passed with zero serious/critical findings.
