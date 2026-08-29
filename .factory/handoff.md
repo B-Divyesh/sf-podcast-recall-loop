@@ -69,3 +69,11 @@ Independent QA accepted candidate `baa86c32fd5ea793cf86e5cd4ed5c78b360306b1` at 
 Live checks covered first-read/demo entry, real capture and reload persistence, invalid native form recovery, desktop and 390 px mobile, keyboard focus, reduced motion, live Axe on all public routes, request logging, headers/caching, PWA activation/offline reload, and hosted license verification rate limiting. The observed Sociobot verify allowance was 30 requests; request 31 returned `429 Retry-After: 3`.
 
 Decision: **PASS**. No Critical, High, Medium, or Low product defects were found. Full evidence: [verification-6.md](verification-6.md).
+
+---
+
+## Adversarial review 3 — FAIL (2026-08-29)
+
+Review-only work; no product source was changed. A fresh clone at the review candidate passed `npm ci`, all 26 declared claim commands, `npm test` (80 tests), `npm run test:unit` (9 tests), and `npm run build` (with `dist/`). Cold live checks at 390px and desktop passed, as did normal demo reset, routing, metadata, links, and privacy request logging.
+
+The remaining blocking gap is [F-3-1 in review-3.md](review-3.md): the visible **Restore a license** link on `/demo` is an unhandled direct `/#restore-license` anchor. It bypasses `resetDemo()`, so a changed sample remains changed after returning to `/demo`. Repair every demo exit or remove the license/purchase exits in demo mode, add an actual-anchor regression test to `demo-isolation`, then rerun the full checklist.
