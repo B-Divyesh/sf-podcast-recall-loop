@@ -1,0 +1,81 @@
+{
+  "asset": "index-CSQkdIlP.js",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "canonical": "https://podcast-recall-loop.sociobot.in/",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    },
+    {
+      "path": "/demo",
+      "status": 200,
+      "title": "Demo — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/demo",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    },
+    {
+      "path": "/app",
+      "status": 200,
+      "title": "Recall queue — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/app",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "title": "Privacy — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/privacy",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "title": "Terms — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/terms",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    },
+    {
+      "path": "/missing-page",
+      "status": 404,
+      "title": "Page not found — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "h1": 1,
+      "main": 1,
+      "errors": [],
+      "serious": []
+    }
+  ],
+  "dailyQueue": {
+    "first": "Question 1 of 3 today",
+    "afterDeletion": "Question 2 of 3 today",
+    "afterDeletionReload": "Question 2 of 3 today",
+    "afterReset": "Question 1 of 3 today",
+    "fiveOverdue": "Question 1 of 3 today",
+    "afterThree": "You are caught up for today",
+    "afterThreeReload": "You are caught up for today"
+  },
+  "home": {
+    "caption": "Save a podcast moment. Write a question. Recall it later.",
+    "headline": "Remember what your podcasts taught you",
+    "primary": 1,
+    "facts": 3
+  },
+  "externalRequests": []
+}

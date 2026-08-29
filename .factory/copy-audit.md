@@ -27,7 +27,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop | 3 | Pass |
 | Recall / Demo / Privacy | 1 each | Pass; destinations |
 | Three porcelain pieces arranged in a quiet recall loop. | 9 | Pass; image alternative |
-| Save. / Ask. / Recall. | 1 each | Pass; workflow caption |
+| Save a podcast moment. Write a question. Recall it later. | 10 | Pass; names the listener-written workflow |
 | Today’s recall | 2 | Pass |
 | Write your own recall question | 5 | Pass |
 | You write the question while the idea is fresh. | 9 | Pass; `manual-authorship` |
@@ -63,7 +63,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Three podcast ideas, recalled daily. | 5 | Pass |
 | Privacy / Terms | 1 each | Pass; destinations |
 | Built by Param Factory | 4 | Pass |
-| Version 1.0.4 · Generated art disclosed in the design notes. | 9 | Pass |
+| Version 1.0.5 · Generated art disclosed in the design notes. | 9 | Pass |
 
 ## Metadata and catalog
 
@@ -72,7 +72,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop — Remember podcast ideas | 7 | Pass; title under 60 characters |
 | Save a podcast timestamp, write your own question, and recall three ideas each day. | 14 | Pass; meta description |
 | Turn podcast moments into three daily recall questions. | 8 | Pass; social description |
-| Turn podcast moments into your own daily recall questions. | 9 | Pass; verb-first catalog line, 58 characters |
+| Turn podcast moments into up to three daily recall questions. | 10 | Pass; verb-first catalog line, 62 characters |
 
 ## Terminology
 
