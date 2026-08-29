@@ -319,6 +319,26 @@ test('@claim:json-backup exports and restores the complete clip library', async 
   await expect(page.getByText('5 saved clips.')).toBeVisible();
 });
 
+test('@claim:invalid-backup-recovery a parseable invalid backup leaves saved clips intact after reload', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.goto('/app');
+  await saveClip(page, 'Will my good note survive a bad backup?');
+
+  await page.locator('#import-file').setInputFiles({
+    name: 'wrong-shaped-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ clips: [{}] }))
+  });
+  await expect(page.locator('#toast')).toHaveText('That backup could not be read. Choose a Recall Loop JSON file.');
+  await expect(page.getByText('Will my good note survive a bad backup?', { exact: true }).first()).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Remember three ideas today' })).toBeVisible();
+  await expect(page.getByText('Will my good note survive a bad backup?', { exact: true }).first()).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
 test('@claim:spaced-schedule a recalled question leaves today’s queue and stays scheduled', async ({ page }) => {
   await page.goto('/demo');
   await expect(page.getByLabel('3 questions due')).toBeVisible();

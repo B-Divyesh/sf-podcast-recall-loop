@@ -1,5 +1,5 @@
 import './styles.css';
-import { completeDailyQueueItem, dailyQueue, formatTimestamp, loadState, parseTimestamp, resetDemo, saveState, scheduleClip, toCsv, toMarkdown, type DailyQueueView } from './data';
+import { completeDailyQueueItem, dailyQueue, formatTimestamp, loadState, parseTimestamp, resetDemo, saveState, scheduleClip, toCsv, toMarkdown, validateImportedState, type DailyQueueView } from './data';
 import { acceptLicenseFromUrl, buyUrl, cachedUnlocked, restoreLicense, verifyLicense } from './license';
 import type { AppState, Clip, Episode } from './types';
 
@@ -275,9 +275,14 @@ function bindForms(): void {
   document.querySelector<HTMLInputElement>('#import-file')?.addEventListener('change', async event => {
     const file = (event.currentTarget as HTMLInputElement).files?.[0]; if (!file) return;
     try {
-      const imported = JSON.parse(await file.text()) as AppState;
-      if (!Array.isArray(imported.clips)) throw new Error('invalid');
-      state = { clips: imported.clips }; await saveState(demo, state); await render(false); showToast('Backup imported.');
+      const imported = validateImportedState(JSON.parse(await file.text()));
+      if (!imported) throw new Error('invalid');
+      // Persist the already validated candidate before changing the in-memory
+      // library. A rejected or failed import therefore leaves both intact.
+      await saveState(demo, imported);
+      state = imported;
+      await render(false);
+      showToast('Backup imported.');
     } catch { showToast('That backup could not be read. Choose a Recall Loop JSON file.'); }
   });
 }

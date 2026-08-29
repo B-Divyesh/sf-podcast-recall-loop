@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { completeDailyQueueItem, dailyQueue, formatTimestamp, parseTimestamp, toCsv, toMarkdown } from '../../src/data';
+import { completeDailyQueueItem, dailyQueue, formatTimestamp, parseTimestamp, toCsv, toMarkdown, validateImportedState } from '../../src/data';
 import { sampleClips } from '../../src/sample';
 
 describe('recall data helpers', () => {
@@ -48,5 +48,28 @@ describe('recall data helpers', () => {
     const afterDelete = dailyQueue(state, new Date('2026-08-29T12:01:00'));
     expect(afterDelete.completed).toBe(1);
     expect(afterDelete.clips).toHaveLength(2);
+  });
+
+  test('rejects a parseable backup with an incomplete clip before it can replace a valid library', () => {
+    const currentLibrary = { clips: structuredClone(sampleClips) };
+    const beforeImport = structuredClone(currentLibrary);
+
+    expect(validateImportedState({ clips: [{}] })).toBeNull();
+    expect(validateImportedState({ clips: [sampleClips[0], sampleClips[0]] })).toBeNull();
+    expect(currentLibrary).toEqual(beforeImport);
+  });
+
+  test('accepts a complete exported state while copying its nested values', () => {
+    const backup = {
+      clips: structuredClone(sampleClips),
+      dailyQueue: { day: '2026-08-29', clipIds: ['sample-1'], completedIds: [] },
+      seeded: true
+    };
+    const imported = validateImportedState(backup);
+
+    expect(imported).toEqual(backup);
+    expect(imported).not.toBe(backup);
+    expect(imported?.clips).not.toBe(backup.clips);
+    expect(imported?.dailyQueue).not.toBe(backup.dailyQueue);
   });
 });

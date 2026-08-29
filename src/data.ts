@@ -25,7 +25,10 @@ export async function loadState(demo: boolean): Promise<AppState> {
   const db = await openDb(demo);
   const existing = await readState(db);
   db.close();
-  if (existing) return existing;
+  if (existing) {
+    const valid = validateImportedState(existing);
+    if (valid) return valid;
+  }
   const initial = demo ? sampleState() : { clips: [] };
   await saveState(demo, initial);
   return initial;
@@ -48,6 +51,91 @@ export async function resetDemo(): Promise<void> {
     request.onerror = () => reject(request.error);
     request.onblocked = () => resolve();
   });
+}
+
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isValidDate(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && Number.isFinite(Date.parse(value));
+}
+
+function isValidLocalDay(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isPositiveFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'string' && item.length > 0);
+}
+
+function hasNoDuplicates(values: string[]): boolean {
+  return new Set(values).size === values.length;
+}
+
+function validateClip(value: unknown): Clip | null {
+  if (!isRecord(value)) return null;
+  const { id, podcast, episode, episodeUrl, feedUrl, timestampSec, prompt, takeaway, createdAt, dueAt, intervalDays, reviewCount, lastResult } = value;
+  if (!isNonEmptyString(id) || !isNonEmptyString(podcast) || !isNonEmptyString(episode)
+    || typeof episodeUrl !== 'string' || typeof feedUrl !== 'string'
+    || !isNonNegativeSafeInteger(timestampSec) || !isNonEmptyString(prompt) || !isNonEmptyString(takeaway)
+    || !isValidDate(createdAt) || !isValidDate(dueAt) || !isPositiveFiniteNumber(intervalDays)
+    || !isNonNegativeSafeInteger(reviewCount)
+    || (lastResult !== undefined && lastResult !== 'remembered' && lastResult !== 'sooner')) return null;
+
+  return {
+    id, podcast, episode, episodeUrl, feedUrl, timestampSec, prompt, takeaway, createdAt, dueAt, intervalDays, reviewCount,
+    ...(lastResult === undefined ? {} : { lastResult })
+  };
+}
+
+function validateDailyQueue(value: unknown): DailyQueue | null {
+  if (!isRecord(value)) return null;
+  const { day, clipIds, completedIds } = value;
+  if (!isValidLocalDay(day) || !isStringArray(clipIds) || !isStringArray(completedIds)
+    || clipIds.length === 0 || clipIds.length > 3 || !hasNoDuplicates(clipIds)
+    || !hasNoDuplicates(completedIds) || !completedIds.every(id => clipIds.includes(id))) return null;
+  return { day, clipIds: [...clipIds], completedIds: [...completedIds] };
+}
+
+/**
+ * Parses only the complete, app-owned backup shape. The returned object is a
+ * new value, so callers can validate it before replacing the current library.
+ */
+export function validateImportedState(value: unknown): AppState | null {
+  if (!isRecord(value) || !Array.isArray(value.clips) || (value.seeded !== undefined && typeof value.seeded !== 'boolean')) return null;
+  const clips: Clip[] = [];
+  for (const rawClip of value.clips) {
+    const clip = validateClip(rawClip);
+    if (!clip) return null;
+    clips.push(clip);
+  }
+  if (!hasNoDuplicates(clips.map(clip => clip.id))) return null;
+
+  const dailyQueue = value.dailyQueue === undefined ? undefined : validateDailyQueue(value.dailyQueue);
+  if (value.dailyQueue !== undefined && !dailyQueue) return null;
+
+  return {
+    clips,
+    ...(dailyQueue ? { dailyQueue } : {}),
+    ...(value.seeded === undefined ? {} : { seeded: value.seeded })
+  };
 }
 
 export type DailyQueueView = {

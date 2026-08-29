@@ -119,6 +119,13 @@
     "sandbox": "fresh /demo sample; export five clips, delete one, import the downloaded bytes, and assert all five return"
   },
   {
+    "id": "invalid-backup-recovery",
+    "claim": "An invalid backup file leaves saved clips unchanged",
+    "where": "README backup import",
+    "test": "npm test -- --grep @claim:invalid-backup-recovery",
+    "sandbox": "fresh /app library; save one question, import the parseable wrong-shaped file {\"clips\":[{}]}, reload, then assert the question remains and no page error occurred"
+  },
+  {
     "id": "spaced-schedule",
     "claim": "A recalled question leaves today's queue and remains scheduled after reload",
     "where": "landing how-it-works, README",

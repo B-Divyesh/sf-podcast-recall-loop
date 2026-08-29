@@ -12,7 +12,7 @@ The app stores written notes in this browser. It stores no audio. The demo at `?
 - Learner-written questions and takeaways tied to timestamps
 - Up to three due questions, with the next review based on your answer
 - Markdown, CSV, and JSON backup exports
-- JSON backup import
+- JSON backup import that rejects invalid files without changing saved clips
 - Install the app and review offline after your first visit
 - A daily calendar reminder download for the recall queue
 - A free eight-clip library
