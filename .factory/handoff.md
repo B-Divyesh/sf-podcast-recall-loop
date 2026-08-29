@@ -1,35 +1,41 @@
-# Podcast Recall Loop — independent verification 11 handoff
+# Podcast Recall Loop — adversarial review 7 handoff
 
 ## Outcome
 
-**PASS.** Independent QA accepted candidate `aa70a8fa3f68e8d84ec3d15f57df2d6a0571f841` at <https://podcast-recall-loop.sociobot.in>. No release-blocking defects were found.
+**FAIL.** The review wrote no product-code changes. One minor, user-facing
+privacy disclosure issue remains; see [review-7.md](review-7.md), F-7-1.
 
-- Verified product commit: `aa70a8fa3f68e8d84ec3d15f57df2d6a0571f841`
-- Production: <https://podcast-recall-loop.sociobot.in>
-- Verified: 29 August 2026 UTC
+## Completed review work
 
-## Verification summary
+- Opened the live site cold at 390px and desktop before scrolling. The first
+  screen clearly states the job, audience, and sample-data first action.
+- Re-ran the demo, offline, real-storage isolation, request-log, routing,
+  metadata, 404, link-crawl, keyboard, Back/focus, mobile, and Axe checks.
+- Read all earlier review/polish/handoff reports and revalidated each earlier
+  finding on current source and live production.
+- Ran `npm ci`, every command declared in `.factory/claims.json`, `npm test`,
+  `npm run test:unit`, and `npm run build` from this checkout.
+- Reproduced F-7-1 in a fresh browser context: two immediate explicit
+  **Verify license** submissions send two verification requests, while `/privacy`
+  currently says a license check sends the token at most once per day.
 
-- Cold first-read passed: the landing page says what it does, who it is for, and offers one-click **Try it with sample data**.
-- Every one of the 28 commands listed in `.factory/claims.json` passed from the clean checkout. This includes offline behavior, demo isolation, RSS/Atom lookup, daily review limits, exports/import recovery, privacy boundaries, PWA behavior, and Sociobot licensing.
-- `npm test` passed 88/88, `npm run test:unit` passed 16/16, and `npm run build` produced `dist/` after TypeScript checking.
-- Production JS/CSS/service-worker/manifest hashes exactly matched the fresh candidate build. The live mobile/desktop checks, keyboard and reduced-motion smoke checks, route checks, console checks, request logging, and axe serious/critical checks passed.
-- Mobile Lighthouse: Performance 91, Accessibility 100, Best Practices 100, SEO 100; LCP 1.6s and CLS 0.
-
-## Evidence
-
-Full current evidence is in [verification-11.md](verification-11.md). Earlier polish-round evidence remains in `evidence/polish-6/` for historical reference.
-
-## Run and verify
+## How to verify
 
 ```sh
 npm ci
 npm test
 npm run test:unit
 npm run build
-node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/podcast-recall-verify
+node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/podcast-recall-review
 ```
 
-## Known gaps and next steps
+For F-7-1, mock the Sociobot verification URL in a fresh Playwright context,
+submit the same restored token twice, and assert two requests. The published
+privacy copy should either state that only automatic rechecks are daily, or the
+product should enforce a total daily cap.
 
-None for the reviewed product contract. This is a static PWA with no product server-side API; rate-limit enforcement is not applicable to the product itself. Deployment infrastructure and Sociobot billing configuration remain factory-owned.
+## Remaining work
+
+Correct F-7-1, add/expand the exact claim assertion, rerun the listed checks,
+and conduct a new full adversarial pass. The review report and handoff are the
+only intended repository changes in this commit.
