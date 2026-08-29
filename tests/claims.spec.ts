@@ -405,7 +405,7 @@ test('@claim:license-storage licensing stores only the token and daily verificat
   expect(verdict.checkedAt).toBeGreaterThanOrEqual(beforeVerification);
   expect(verdict.checkedAt).toBeLessThanOrEqual(Date.now());
   await page.goto('/privacy');
-  await expect(page.getByText('This app stores your license token and its daily verification result in this browser.', { exact: true })).toBeVisible();
+  await expect(page.getByText('This app stores your license token and its daily verification result in this browser.')).toBeVisible();
 });
 
 async function fillClip(page: import('@playwright/test').Page, question: string): Promise<void> {

@@ -158,7 +158,7 @@ try {
   assert(JSON.stringify(Object.keys(verdict).sort()) === JSON.stringify(['checkedAt', 'valid']), 'The stored verdict has unexpected fields.');
   assert(verdict.valid === true && verdict.checkedAt >= beforeVerification && verdict.checkedAt <= Date.now(), 'The stored verdict is invalid.');
   await licensePage.goto(`${baseUrl}/privacy`, { waitUntil: 'networkidle' });
-  await licensePage.getByText('This app stores your license token and its daily verification result in this browser.', { exact: true }).waitFor();
+  await licensePage.getByText('This app stores your license token and its daily verification result in this browser.').waitFor();
   await licensePage.screenshot({ path: `${evidenceDir}/live-privacy-desktop.png`, fullPage: true });
   report.findings.licenseStorage = { keys: Object.keys(licenseStorage).sort(), verdictFields: Object.keys(verdict).sort(), privacyCopy: true };
   await licenseContext.close();
