@@ -24,7 +24,7 @@ Every finding in reviews 1–4 and every prior polish report was reread, recheck
 | F-2-2 | Atom parsing stays declared with exact podcast, episode, and link assertions. | `@claim:atom-lookup`. |
 | F-2-3 | Back/Forward preserve scroll and focus the destination heading. | `Back restores the previous scroll position and focuses its page heading` in `npm test`. |
 | F-3-1 | Every visible demo departure, including Restore and checkout, uses the disposal guard. | `@claim:demo-isolation`; live demo capture above. |
-| F-4-1 | Added a persisted local-day queue snapshot with at most three IDs and completed IDs; it does not refill until the next local day. | `@claim:daily-three`; live five-overdue sequence in `live-browser.json`: 1/3 → caught up → caught up after reload. |
+| F-4-1 | Added a persisted local-day queue snapshot with at most three IDs and completed IDs; it does not refill until the next local day. | `@claim:daily-three`; live five-overdue sequence in `live-browser.json`: 1/3 → caught up → caught up after reload → 1/2 next day. |
 | F-4-2 | Progress comes from that daily queue, not historical review counts; fresh sample starts at **Question 1 of 3 today**. Deleting the first prompt now preserves 2/3 across reload. | `@claim:demo-seed-reset`; `live-demo/daily-three-mobile.png`; live `live-browser.json`. |
 | F-4-3 | Broadened `local-privacy` to record requests through real-note save, reload, export, import, and delete. | `@claim:local-privacy`; fresh-clone request log asserts no external requests. |
 | F-4-4 | README now says Start for real discards demo changes and opens the separate real library. | README review; `@claim:demo-isolation` preserves a seeded real note. |
