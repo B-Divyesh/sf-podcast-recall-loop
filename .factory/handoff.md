@@ -1,57 +1,74 @@
-# Podcast Recall Loop — polish round 4 handoff
+# Podcast Recall Loop — independent verification 8 handoff
 
 ## Outcome
 
-**PASS.** Repairs `71836131dbe35dfe7a60125b2e5b0ba5fffa33a7` and `97cf4e4113df9d751da307e84bf9505db44ccce1` close every review 1–4 finding. They are deployed at <https://podcast-recall-loop.sociobot.in> through Static Web Apps deployment `0e29b1df-e333-4519-868c-d6a3fa4c691d`.
+**FAIL. Do not release candidate `a52afadee0cec2fac9d7518b2ed3f25e30d05eb1`.**
 
-The recall queue now saves a fixed, dated set of at most three clip IDs and completed IDs. It starts the demo at Question 1, does not surface a fourth overdue item after three answers, survives reload in the caught-up state, and selects deferred overdue clips only on the next local day.
+The deployment at <https://podcast-recall-loop.sociobot.in> exactly matches the
+candidate, and all declared claims and standard quality gates pass. Release is
+blocked because a structurally invalid JSON backup overwrites a valid local
+library before validation, claims to reject the file, then leaves `/app` blank
+with a page error after reload. See
+[verification-8.md](verification-8.md) for the full reproduction and evidence.
 
-## What changed
+## Blocking defect
 
-- Added the daily queue snapshot and accurate 1→2→3 progress.
-- Strengthened `daily-three`, demo reset, and saved-note privacy claim tests.
-- Corrected the README’s real-library and Node-version statements; added exact Node engines and compatibility CI.
-- Rewrote the landing art caption in plain, product-specific language.
-- Updated the catalog description: “Turn podcast moments into up to three daily recall questions.”
+**High — invalid backup import causes unrecoverable local data loss.**
 
-See [polish-4.md](polish-4.md) for finding-by-finding changes and evidence.
+1. Save a valid note in `/app`.
+2. Import `{"clips":[{}]}`.
+3. Observe **“That backup could not be read”** while the note still appears.
+4. Reload.
+5. The UI is blank, the note is gone, IndexedDB contains the invalid object,
+   and the page throws `Cannot read properties of undefined (reading 'replace')`.
 
-## Exact verification
+Validate the complete imported schema before assigning `state` or calling
+`saveState`. Preserve the current state on every rejection. Add a claim or
+regression test covering a parseable wrong-shape backup, existing-data
+preservation, and a successful reload.
 
-Fresh clone: `/tmp/podcast-recall-final.ls9iCd/repo` from `97cf4e4`, followed by `npm ci` (0 vulnerabilities).
+## Defects by severity
+
+| Severity | Findings |
+| --- | --- |
+| Critical | None |
+| High | Invalid backup import overwrites valid local data and blanks the app after reload. |
+| Medium | None |
+| Low | None |
+
+## Verification summary
 
 ```text
-26 / 26 claims.json commands run independently     PASS
-npm test (desktop + 390px browser suite)           PASS — 80 tests in 1.4m
-npm run test:unit                                  PASS — 13 tests
-npm run build                                      PASS — dist/ produced
-Node 20.19.0 and 22.12.0 CI build matrix           PASS
+npm ci                         PASS — 0 vulnerabilities
+26 claims.json commands        PASS — 26/26 entries
+npm test                       PASS — 80/80
+npm run test:unit              PASS — 13/13
+npm run build                  PASS — dist/ produced
+live/local artifact hashes     PASS — HTML, JS, CSS, SW, manifest match
+live Axe                       PASS — 0 serious/critical in 18 scans
+mobile Lighthouse              PASS — 95/100/100/100
+offline reload and review      PASS
+license rate limiting          PASS — 30 allowed, request 31 returned 429 + Retry-After
+invalid backup recovery        FAIL — data overwritten; blank app after reload
 ```
 
-The independent `@claim:daily-three` run makes all five sample clips overdue, completes three, reloads into **You are caught up for today**, then advances the stored day and sees **Question 1 of 2 today**. `@claim:local-privacy` now records requests through save, reload, export, import, and delete in the real library.
+The cold first-read gate passes: the first viewport identifies the job and
+audience and provides a one-click **Try it with sample data** action. Live
+normal routes have no console errors, the 390px layout does not overflow,
+keyboard focus is visible, reduced motion is respected, privacy request logs
+are same-origin, and production headers/caching are correct.
 
-Production recheck after deployment:
+## Evidence
 
-- `verify-url.sh` passed for cold `/` and `/?demo=1`, with no console errors, valid title/lang/main/alt structure, and labeled controls.
-- Live Playwright + Axe passed six routes, including real HTTP 404; zero serious or critical Axe issues. The expected browser resource notice for loading the 404 document itself is excluded from the missing-page report, while product console errors are zero.
-- Live mobile Lighthouse: 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 1.08 s, CLS 0, TBT 26 ms.
-- Live HTML references `index-CSQkdIlP.js`, matching local `dist/`; its JavaScript is 29,733 bytes raw / 10.37 KB gzip and carries immutable caching.
+- [Full independent verification](verification-8.md)
+- [Valid note and rejection message](evidence/verification-8/malformed-import-before-reload.png)
+- [Blank app after reload](evidence/verification-8/malformed-import-after-reload.png)
+- [Cold live home verification](evidence/verification-8/live-home/verify.json)
+- [Cold live demo verification](evidence/verification-8/live-demo/verify.json)
+- [Mobile Lighthouse report](evidence/verification-8/lighthouse-mobile.json)
 
-Evidence is under [evidence/polish-4](evidence/polish-4), including [live browser checks](evidence/polish-4/live-browser.json), [cold home](evidence/polish-4/live-home/screenshot-mobile.png), [one-click demo](evidence/polish-4/live-demo/daily-three-mobile.png), and [Lighthouse](evidence/polish-4/lighthouse-mobile.json).
+## Next step
 
-## Run locally
-
-Requires Node.js 20.19+ or 22.12+.
-
-```sh
-npm ci
-npm test
-npm run test:unit
-npm run build
-```
-
-Demo: `http://localhost:4173/?demo=1`. Production deployment serves `dist/`; no secrets are stored in the repository.
-
-## Known gaps
-
-None.
+Repair import validation and add the regression test described above. Rebuild,
+redeploy, then rerun the claim gate and the invalid-input recovery scenario.
+No product code was modified during this verification.
