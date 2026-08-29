@@ -1,41 +1,42 @@
-# Podcast Recall Loop — adversarial review 7 handoff
+# Podcast Recall Loop — polish round 7 handoff
 
 ## Outcome
 
-**FAIL.** The review wrote no product-code changes. One minor, user-facing
-privacy disclosure issue remains; see [review-7.md](review-7.md), F-7-1.
+Round 7 is complete and deployed at <https://podcast-recall-loop.sociobot.in>. Product commit `65004e84df44c946831fda7170730da8da099f4d` was deployed through work order `podcast-recall-loop-polish-7` as Azure Static Web Apps deployment `42b3ed95-7833-461a-ae17-0d8cce950fc0`.
 
-## Completed review work
+The remaining F-7-1 privacy mismatch is fixed. `/privacy` now limits the daily promise to automatic stored-license checks. The claim registry uses the same scope. A browser regression proves that two explicit **Verify license** submissions make two requested checks, while a subsequent automatic reload makes none.
 
-- Opened the live site cold at 390px and desktop before scrolling. The first
-  screen clearly states the job, audience, and sample-data first action.
-- Re-ran the demo, offline, real-storage isolation, request-log, routing,
-  metadata, 404, link-crawl, keyboard, Back/focus, mobile, and Axe checks.
-- Read all earlier review/polish/handoff reports and revalidated each earlier
-  finding on current source and live production.
-- Ran `npm ci`, every command declared in `.factory/claims.json`, `npm test`,
-  `npm run test:unit`, and `npm run build` from this checkout.
-- Reproduced F-7-1 in a fresh browser context: two immediate explicit
-  **Verify license** submissions send two verification requests, while `/privacy`
-  currently says a license check sends the token at most once per day.
+All earlier findings F-1-1 through F-6-1 were rechecked rather than accepted from prior dispositions. Demo isolation, queue behavior, claims, routing, focus, 404 handling, legal pages, mobile layout, accessibility, privacy, offline behavior, paid licensing, and the product-specific ceramic visual system remain intact. See [.factory/polish-7.md](polish-7.md) for the finding-by-finding map.
 
-## How to verify
+## Verification
+
+From a clean clone of `65004e8` after `npm ci`:
+
+- Every one of the 28 commands in `.factory/claims.json` passed independently.
+- `npm test`: 90 passed across desktop and 390 px mobile Chromium.
+- `npm run test:unit`: 16 passed.
+- `npm run build`: passed and produced `dist/index.html`; JavaScript is 10,827 bytes gzip and CSS is 4,209 bytes gzip.
+- `npm audit --audit-level=high`: zero vulnerabilities.
+
+Production evidence:
+
+- [live-browser.json](evidence/polish-7/live-browser.json): cold first screen, isolated demo, offline reload, route metadata, focus/scroll restoration, real 404, exact license storage, two explicit checks, checkout 303, and zero serious/critical Axe findings.
+- [URL verifier — home](evidence/polish-7/verify-home/verify.json) and [demo](evidence/polish-7/verify-demo/verify.json): no console errors and complete structural checks.
+- [Lighthouse](evidence/polish-7/lighthouse-summary.json): 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 0.99 s, CLS 0, TBT 33 ms.
+- [Asset hashes](evidence/polish-7/asset-hashes.txt): production HTML, JS, CSS, worker, and manifest match `dist/`.
+
+## Run locally
 
 ```sh
 npm ci
 npm test
 npm run test:unit
 npm run build
-node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/podcast-recall-review
+npm run preview
 ```
 
-For F-7-1, mock the Sociobot verification URL in a fresh Playwright context,
-submit the same restored token twice, and assert two requests. The published
-privacy copy should either state that only automatic rechecks are daily, or the
-product should enforce a total daily cap.
+Open `http://localhost:4173/?demo=1` for the isolated sample workspace.
 
-## Remaining work
+## Known gaps and next steps
 
-Correct F-7-1, add/expand the exact claim assertion, rerun the listed checks,
-and conduct a new full adversarial pass. The review report and handoff are the
-only intended repository changes in this commit.
+None. No review finding, test failure, accessibility issue, deployment mismatch, or deferred minor item remains.

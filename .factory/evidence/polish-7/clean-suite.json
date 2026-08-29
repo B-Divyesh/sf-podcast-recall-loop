@@ -1,0 +1,16 @@
+{
+  "commit": "65004e84df44c946831fda7170730da8da099f4d",
+  "cleanClone": "/tmp/tmp.CeB5t54ZBS/repo",
+  "npmCi": "passed",
+  "npmTest": { "passed": 90, "failed": 0, "duration": "1.7m" },
+  "npmRunTestUnit": { "passed": 16, "failed": 0 },
+  "npmRunBuild": {
+    "passed": true,
+    "distIndex": true,
+    "javascriptRawBytes": 31541,
+    "javascriptGzipBytes": 10827,
+    "cssRawBytes": 14177,
+    "cssGzipBytes": 4209
+  },
+  "npmAuditHigh": { "vulnerabilities": 0 }
+}

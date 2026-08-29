@@ -1,0 +1,19 @@
+Deployment 42b3ed95-7833-461a-ae17-0d8cce950fc0
+Local and live SHA-256 values match:
+
+index.html
+1832645f267d43cc6c95a93e771c5fbda18cc50adfeab2d899b8cdc4daa89a0c
+
+assets/index-D-s6yucn.js
+337d4d54b6838186c9167d85e257830d1e3ca08fa6daae56d4194029574c3be6
+
+assets/index-CB1EBUkx.css
+0fe67a484500db387d9f8fa012dddb5262beae4480df82037febdbf270d14078
+
+sw.js
+c5318e4ab74bbc5b7aaa4ced3216c06629c7f25f507abc66b47e84bd0aaffa25
+
+manifest.webmanifest
+ddb62c03a08c126a72cf88baecd1aded25308a2823b4c60c62191d0ad953e05b
+
+The live JavaScript response is HTTP 200 with Cache-Control: public, max-age=31536000, immutable.

@@ -1,0 +1,105 @@
+{
+  "baseUrl": "https://podcast-recall-loop.sociobot.in",
+  "checkedAt": "2026-08-29T23:54:06.665Z",
+  "routes": {
+    "/": {
+      "status": 200,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": 0
+    },
+    "/demo": {
+      "status": 200,
+      "title": "Demo — Podcast Recall Loop",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": 0
+    },
+    "/app": {
+      "status": 200,
+      "title": "Recall queue — Podcast Recall Loop",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": 0
+    },
+    "/privacy": {
+      "status": 200,
+      "title": "Privacy — Podcast Recall Loop",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": 0
+    },
+    "/terms": {
+      "status": 200,
+      "title": "Terms — Podcast Recall Loop",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": 0
+    },
+    "/missing-page": {
+      "status": 404,
+      "title": "Page not found — Podcast Recall Loop",
+      "h1": 1,
+      "main": 1,
+      "seriousAxe": 0,
+      "consoleErrors": "expected 404 navigation only"
+    }
+  },
+  "findings": {
+    "firstScreen": {
+      "headline": true,
+      "action": true,
+      "factsAboveFold": true,
+      "noOverflow": true
+    },
+    "demo": {
+      "oneClick": true,
+      "banner": true,
+      "reset": true,
+      "dailySequence": "1→2→3→caught up",
+      "offlineReload": true,
+      "externalRequests": []
+    },
+    "demoIsolation": {
+      "realStateUnchanged": true,
+      "tokenIgnored": true,
+      "restoreExitReset": true,
+      "startExitReset": true,
+      "externalRequests": []
+    },
+    "licenseStorage": {
+      "keys": [
+        "sb_license:podcast-recall-loop",
+        "sb_license:podcast-recall-loop:verdict"
+      ],
+      "verdictFields": [
+        "checkedAt",
+        "valid"
+      ],
+      "privacyCopy": true
+    },
+    "licenseNetworkWording": {
+      "automaticDailyScope": true,
+      "explicitVerificationRequests": 2
+    },
+    "routing": {
+      "metadata": true,
+      "legalLinks": true,
+      "http404": true,
+      "backScroll": 1200,
+      "backFocus": true,
+      "axeSeriousCritical": 0
+    },
+    "checkout": {
+      "status": 303,
+      "locationPresent": true
+    }
+  },
+  "errors": []
+}
