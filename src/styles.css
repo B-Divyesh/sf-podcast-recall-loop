@@ -6,3 +6,4 @@
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.button:active,button:active{transform:none}}
 .wordmark,.site-header nav a,.site-footer nav a,.demo-actions a,.quiet-link{display:inline-flex;min-width:44px;min-height:44px;align-items:center}
 .restore-panel{width:100%}.restore-panel summary,.limit-note a,.fine a{display:inline-flex;min-height:44px;align-items:center;font-weight:750;cursor:pointer}.restore-panel[open] summary{margin-bottom:8px}.limit-note{align-items:center}.limit-note a{flex:none}
+.calendar-reminder{margin-top:8px;background:transparent;color:var(--deep);border-color:var(--blue)}

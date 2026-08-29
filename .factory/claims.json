@@ -8,10 +8,17 @@
   },
   {
     "id": "demo-isolation",
-    "claim": "Demo changes never enter the real note library",
+    "claim": "Demo never reads or writes real notes or license storage",
     "where": "demo banner, README",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh browser context; add a question in /demo, then open /app and assert an empty real library"
+    "sandbox": "fresh browser context; seed a real note library and license, use /demo?license=..., then byte-compare real IndexedDB and localStorage with zero external requests"
+  },
+  {
+    "id": "demo-seed-reset",
+    "claim": "The demo starts with five sample clips and Reset demo restores them",
+    "where": "landing action, demo banner, README",
+    "test": "npm test -- --grep @claim:demo-seed-reset",
+    "sandbox": "fresh /demo context; assert five authored clips and three due questions, change one, reset, then assert the original counts return"
   },
   {
     "id": "rss-lookup",
@@ -105,6 +112,20 @@
     "sandbox": "fresh /demo sample; mark one of three due questions remembered, assert two remain, reload, and assert two still remain"
   },
   {
+    "id": "review-results",
+    "claim": "The next review is based on the answer",
+    "where": "landing how-it-works, README",
+    "test": "npm test -- --grep @claim:review-results",
+    "sandbox": "fresh /demo sample; use Review sooner and I remembered, then assert each removes one question from today’s queue"
+  },
+  {
+    "id": "calendar-reminder",
+    "claim": "Downloads a daily calendar reminder for the recall queue",
+    "where": "recall queue",
+    "test": "npm test -- --grep @claim:calendar-reminder",
+    "sandbox": "fresh /app context; download the calendar file and assert it has a daily rule and a link to /app"
+  },
+  {
     "id": "installable-pwa",
     "claim": "The app is installable as a standalone PWA",
     "where": "README",
@@ -123,7 +144,7 @@
     "claim": "Unlimited clips cost $9 once through Sociobot checkout",
     "where": "landing price, app limit, README",
     "test": "npm test -- --grep @claim:one-time-unlimited",
-    "sandbox": "fresh browser context at /; intercept the exact Sociobot checkout URL, activate the $9 purchase link, and assert checkout navigation starts"
+    "sandbox": "fresh browser context at /; intercept the recorded Sociobot checkout fixture, activate purchase, and assert product slug, USD, one-time billing, and 900-cent amount"
   },
   {
     "id": "license-restore",

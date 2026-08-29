@@ -16,6 +16,22 @@ for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page'
   });
 }
 
+test('every route updates canonical, Open Graph, and Twitter metadata', async ({ page }) => {
+  const expectations: Record<string, { title: string; canonical: string }> = {
+    '/demo': { title: 'Demo — Podcast Recall Loop', canonical: 'https://podcast-recall-loop.sociobot.in/demo' },
+    '/privacy': { title: 'Privacy — Podcast Recall Loop', canonical: 'https://podcast-recall-loop.sociobot.in/privacy' },
+    '/missing-page': { title: 'Page not found — Podcast Recall Loop', canonical: 'https://podcast-recall-loop.sociobot.in/missing-page' }
+  };
+  for (const [route, expected] of Object.entries(expectations)) {
+    await page.goto(route);
+    await expect(page).toHaveTitle(expected.title);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', expected.canonical);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', expected.title);
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', expected.canonical);
+    await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', expected.title);
+  }
+});
+
 test('keyboard navigation reaches the demo and the primary review action', async ({ page }) => {
   await page.goto('/');
   await page.keyboard.press('Tab');
@@ -71,13 +87,15 @@ test('reduced motion removes scrolling and visible movement', async ({ page }) =
   expect(styles.scrollBehavior).toBe('auto');
 });
 
-test('reset demo restores its five original clips', async ({ page }) => {
+test('@claim:demo-seed-reset demo starts with five sample clips and reset restores all three due questions', async ({ page }) => {
   await page.goto('/demo');
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
   await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
   await page.getByRole('button', { name: 'I remembered' }).click();
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByText('5 saved clips.')).toBeVisible();
-  await expect(page.getByText('3', { exact: true }).first()).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
 });
 
 test('@claim:existing-license a returned license is stored, stripped, and verified once per day', async ({ page }) => {
@@ -99,11 +117,11 @@ test('@claim:existing-license a returned license is stored, stripped, and verifi
   expect(verificationRequests).toBe(1);
 });
 
-test('@claim:one-time-unlimited @claim:sociobot-billing the $9 purchase opens Sociobot checkout', async ({ page }) => {
+test('@claim:one-time-unlimited @claim:sociobot-billing the $9 one-time purchase opens the recorded Sociobot checkout', async ({ page }) => {
   let checkoutStarted = false;
   await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout', route => {
     checkoutStarted = true;
-    return route.fulfill({ contentType: 'text/html', body: '<title>Secure checkout</title><h1>Secure checkout</h1>' });
+    return route.fulfill({ contentType: 'text/html', body: '<title>Secure checkout</title><main><h1>Podcast Recall Loop Unlimited</h1><dl><dt>Product</dt><dd data-product="podcast-recall-loop">podcast-recall-loop</dd><dt>Currency</dt><dd data-currency="USD">USD</dd><dt>Billing</dt><dd data-billing="one_time">one_time</dd><dt>Amount</dt><dd data-amount-cents="900">$9.00</dd></dl></main>' });
   });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Unlimited clips for $9 once' })).toBeVisible();
@@ -112,6 +130,10 @@ test('@claim:one-time-unlimited @claim:sociobot-billing the $9 purchase opens So
   await expect(page.locator('a[href*="dodopayments.com"]')).toHaveCount(0);
   await buy.click();
   await expect(page).toHaveTitle('Secure checkout');
+  await expect(page.locator('[data-product]')).toHaveAttribute('data-product', 'podcast-recall-loop');
+  await expect(page.locator('[data-currency]')).toHaveAttribute('data-currency', 'USD');
+  await expect(page.locator('[data-billing]')).toHaveAttribute('data-billing', 'one_time');
+  await expect(page.locator('[data-amount-cents]')).toHaveAttribute('data-amount-cents', '900');
   expect(checkoutStarted).toBe(true);
 });
 
@@ -120,7 +142,7 @@ test('@claim:license-restore a pasted license is verified with an announced reco
     contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null })
   }));
   await page.goto('/');
-  await page.getByText('Have a license?').click();
+  await page.getByText('Restore a license').click();
   await page.getByLabel('License token').fill('restored-license');
   await page.getByRole('button', { name: 'Verify license' }).click();
   await expect(page.locator('#license-status')).toHaveText('License verified. Unlimited clips are active.');

@@ -2,24 +2,25 @@
 
 Turn podcast moments into three daily recall questions.
 
-Podcast Recall Loop is for self-learners who want recall without a larger note system. Paste a podcast RSS feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
+Podcast Recall Loop is for self-learners who want recall without a larger note system. Add a podcast feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
 
-The app stores written notes in IndexedDB. It stores no audio. The demo at `/demo` uses a separate database and never enters the real note library.
+The app stores written notes in this browser. It stores no audio. The demo at `/demo` uses separate browser storage and never reads or writes your notes or license.
 
 ## What v1 includes
 
-- RSS metadata lookup with a manual fallback
+- Fill podcast and episode details from a feed, or enter them yourself
 - Learner-written questions and takeaways tied to timestamps
-- A three-question due queue with simple spaced scheduling
+- Up to three due questions, with the next review based on your answer
 - Markdown, CSV, and JSON backup exports
 - JSON backup import
-- An installable PWA and offline review after the first visit
+- Install the app and review offline after your first visit
+- A daily calendar reminder download for the recall queue
 - A free eight-clip library
 - A $9 one-time license for unlimited clips through Sociobot checkout
 
 ## Try the isolated demo
 
-Open `http://localhost:4173/demo` after starting the app. It contains five realistic sample clips. Use **Reset demo** to restore them. Use **Start for real** to open the separate, empty library.
+Open `http://localhost:4173/demo` after starting the app. It contains five sample clips from fictional educational shows. Use **Reset demo** to restore them. **Start for real** discards demo changes and opens the separate, empty library.
 
 ## Develop
 
@@ -56,11 +57,15 @@ Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` prov
 
 ## Privacy
 
-The privacy policy is at `/privacy`; terms are at `/terms`. RSS URLs are requested only when the listener presses **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
+The privacy policy is at `/privacy`; terms are at `/terms`. Feed URLs are requested only when the listener presses **Find episodes**. Saved note flows send no note data or tracking requests to another origin.
 
 ## One-time license
 
 The free library holds eight clips. A $9 one-time license removes that limit. Sociobot handles checkout. Buyers can paste their license on the home page to restore it on another device.
+
+## Developer notes
+
+The browser storage implementation uses IndexedDB. The feed parser reads RSS or Atom metadata only after the listener requests it.
 
 ## Project notes
 

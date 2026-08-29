@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { sampleClips } from '../../src/sample';
-import { renderServiceWorker } from '../../scripts/finalize-build.mjs';
+import { renderRouteShell, renderServiceWorker } from '../../scripts/finalize-build.mjs';
 
 describe('release regressions', () => {
   test('sample clips never expose fictional dead links', () => {
@@ -39,13 +39,15 @@ describe('release regressions', () => {
     expect(newWorker).not.toContain('__PRECACHE_MANIFEST__');
   });
 
-  test('known routes rewrite to the app while unknown routes keep HTTP 404', () => {
+  test('known routes have crawlable metadata shells while unknown routes keep HTTP 404', () => {
     const config = JSON.parse(readFileSync('public/staticwebapp.config.json', 'utf8'));
     expect(config.navigationFallback).toBeUndefined();
     expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html' });
-    for (const route of ['/app', '/demo', '/privacy', '/terms']) {
-      expect(config.routes).toContainEqual({ route, rewrite: '/index.html' });
-    }
+    const html = readFileSync('index.html', 'utf8');
+    const demo = renderRouteShell(html, '/demo');
+    expect(demo).toContain('<title>Demo — Podcast Recall Loop</title>');
+    expect(demo).toContain('https://podcast-recall-loop.sociobot.in/demo');
+    expect(demo).toContain('Try five sample podcast clips in a private demo.');
   });
 
   test('the update path claims clients and activates only after user action', () => {

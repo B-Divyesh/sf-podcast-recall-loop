@@ -11,13 +11,47 @@ test('@claim:offline-reload reviews work offline after the first visit', async (
   await expect(page.getByRole('button', { name: 'Reveal my takeaway' })).toBeVisible();
 });
 
-test('@claim:demo-isolation demo changes never enter the real note library', async ({ page }) => {
-  await page.goto('/demo');
+test('@claim:demo-isolation demo never reads or writes real notes or licenses', async ({ page }) => {
+  await page.goto('/app');
+  await saveClip(page, 'A real-library question?');
+  const external: string[] = [];
+  page.on('request', request => {
+    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url());
+  });
+  const before = await page.evaluate(async () => {
+    localStorage.setItem('sb_license:podcast-recall-loop', 'real-license');
+    localStorage.setItem('sb_license:podcast-recall-loop:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    const value = await new Promise<unknown>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    database.close();
+    return { storage: Object.fromEntries(Object.entries(localStorage)), value };
+  });
+  await page.goto('/demo?license=demo-url-token');
+  await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
   await saveClip(page, 'A demo-only question?');
   await expect(page.getByText('6 saved clips.')).toBeVisible();
-  await page.getByRole('link', { name: 'Start for real' }).click();
-  await expect(page.getByText('No clips yet. Saved questions will appear here.')).toBeVisible();
+  const after = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    const value = await new Promise<unknown>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    database.close();
+    return { storage: Object.fromEntries(Object.entries(localStorage)), value };
+  });
+  expect(after).toEqual(before);
+  expect(external).toEqual([]);
+  await page.getByRole('button', { name: 'Start for real' }).click();
+  await expect(page.getByText('A real-library question?', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('A demo-only question?')).toHaveCount(0);
+  await page.goto('/demo');
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
 });
 
 test('@claim:rss-lookup an RSS feed fills podcast and episode fields', async ({ page }) => {
@@ -26,7 +60,7 @@ test('@claim:rss-lookup an RSS feed fills podcast and episode fields', async ({ 
     body: `<?xml version="1.0"?><rss><channel><title>Careful Learner</title><item><title>The testing effect</title><link>https://example.test/episode</link><pubDate>Wed, 26 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>`
   }));
   await page.goto('/demo');
-  await page.getByLabel('Podcast RSS feed').fill('https://feeds.example.test/learning.xml');
+  await page.getByLabel('Podcast feed address').fill('https://feeds.example.test/learning.xml');
   await page.getByRole('button', { name: 'Find episodes' }).click();
   await expect(page.getByText('Found 1 recent episodes.')).toBeVisible();
   await expect(page.getByLabel('Podcast name')).toHaveValue('Careful Learner');
@@ -174,6 +208,26 @@ test('@claim:spaced-schedule a recalled question leaves today’s queue and stay
   await expect(page.getByLabel('2 questions due')).toBeVisible();
   await page.reload();
   await expect(page.getByLabel('2 questions due')).toBeVisible();
+});
+
+test('@claim:review-results both review results schedule the next review from the answer', async ({ page }) => {
+  await page.goto('/demo');
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'Review sooner' }).click();
+  await expect(page.getByLabel('2 questions due')).toBeVisible();
+  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+  await page.getByRole('button', { name: 'I remembered' }).click();
+  await expect(page.getByLabel('1 questions due')).toBeVisible();
+});
+
+test('@claim:calendar-reminder downloads a local recurring daily reminder for the recall queue', async ({ page }) => {
+  await page.goto('/app');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Add a daily calendar reminder' }).click();
+  const content = await readDownload((await downloadPromise).createReadStream());
+  expect(content).toContain('RRULE:FREQ=DAILY');
+  expect(content).toContain('URL:https://podcast-recall-loop.sociobot.in/app');
+  expect(content).toContain('SUMMARY:Recall three podcast ideas');
 });
 
 test('@claim:installable-pwa exposes an install manifest and active service worker', async ({ page, request }) => {

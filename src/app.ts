@@ -25,8 +25,34 @@ function routeTitle(path: string): string {
   return 'Page not found — Podcast Recall Loop';
 }
 
+type RouteMeta = { title: string; description: string };
+
+function routeMeta(path: string): RouteMeta {
+  if (path === '/demo') return { title: 'Demo — Podcast Recall Loop', description: 'Try five sample podcast clips in a private demo.' };
+  if (path === '/app') return { title: 'Recall queue — Podcast Recall Loop', description: 'Save podcast moments and review up to three questions today.' };
+  if (path === '/privacy') return { title: 'Privacy — Podcast Recall Loop', description: 'See what Podcast Recall Loop stores in this browser.' };
+  if (path === '/terms') return { title: 'Terms — Podcast Recall Loop', description: 'Read the terms for Podcast Recall Loop.' };
+  if (path === '/') return { title: 'Podcast Recall Loop — Remember podcast ideas', description: 'Save a podcast timestamp, write your own question, and recall three ideas each day.' };
+  return { title: 'Page not found — Podcast Recall Loop', description: 'This Podcast Recall Loop page could not be found.' };
+}
+
+function setRouteMetadata(path: string): void {
+  const meta = routeMeta(path);
+  const canonical = `https://podcast-recall-loop.sociobot.in${path}`;
+  document.title = meta.title;
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')!.href = canonical;
+  const entries: Array<[string, string]> = [
+    ['meta[property="og:title"]', meta.title],
+    ['meta[property="og:description"]', meta.description],
+    ['meta[property="og:url"]', canonical],
+    ['meta[name="twitter:title"]', meta.title],
+    ['meta[name="twitter:description"]', meta.description]
+  ];
+  for (const [selector, value] of entries) document.querySelector<HTMLMetaElement>(selector)!.content = value;
+}
+
 function shell(content: string): string {
-  return `${demo ? `<aside class="demo-banner" aria-label="Demo mode"><span><strong>Demo</strong> — sample data, nothing is saved to your notes.</span><span class="demo-actions"><button class="text-button" data-action="reset-demo">Reset demo</button><a href="/app" data-link>Start for real</a></span></aside>` : ''}
+  return `${demo ? `<aside class="demo-banner" aria-label="Demo mode"><span><strong>Demo</strong> — sample data, nothing is saved to your notes.</span><span class="demo-actions"><button class="text-button" data-action="reset-demo">Reset demo</button><button class="text-button" data-action="leave-demo">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="wordmark" href="/" data-link aria-label="Podcast Recall Loop home"><span class="loop-mark" aria-hidden="true"></span><span>Podcast Recall Loop</span></a>
       <nav aria-label="Main navigation"><a href="/app" data-link>Recall</a><a href="/demo" data-link>Demo</a><a href="/privacy" data-link>Privacy</a></nav>
@@ -41,22 +67,22 @@ function landing(): string {
   return shell(`
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">A small loop for long listens</p>
+        <p class="eyebrow">Podcast recall for long listens</p>
         <h1 id="hero-title" tabindex="-1">Remember what your podcasts taught you</h1>
         <p class="lede">For curious listeners who save good moments but forget the ideas.</p>
         <div class="hero-actions"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads five podcast clips. No setup.</span></div>
-        <a class="quiet-link" href="/app" data-link>Start with your RSS feed →</a>
+        <a class="quiet-link" href="/app" data-link>Add a podcast feed →</a>
         <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
       </div>
-      <figure class="hero-art"><picture><source media="(max-width: 600px)" srcset="/assets/recall-ceramics-small.webp"><img src="/assets/recall-ceramics.webp" width="1100" height="733" alt="Three porcelain pieces arranged in a quiet recall loop." decoding="async" fetchpriority="high"></picture><figcaption>Capture. Ask. Recall.</figcaption></figure>
+      <figure class="hero-art"><picture><source media="(max-width: 600px)" srcset="/assets/recall-ceramics-small.webp"><img src="/assets/recall-ceramics.webp" width="1100" height="733" alt="Three porcelain pieces arranged in a quiet recall loop." decoding="async" fetchpriority="high"></picture><figcaption>Save. Ask. Recall.</figcaption></figure>
     </section>
     <section class="preview-section" aria-labelledby="preview-title">
-      <div><p class="eyebrow">Today’s recall</p><h2 id="preview-title">One question. Your words.</h2><p>You write the question while the idea is fresh. The loop brings it back later.</p></div>
+      <div><p class="eyebrow">Today’s recall</p><h2 id="preview-title">Write your own recall question</h2><p>You write the question while the idea is fresh. The recall queue brings it back later.</p></div>
       <article class="prompt-card preview-card"><p class="timestamp">12:34 · Why retrieval beats rereading</p><h3>Why does retrieving an idea strengthen memory?</h3><div class="answer-rule" aria-hidden="true"></div><p class="muted">Reveal your takeaway when you have answered.</p></article>
     </section>
-    <section class="steps" aria-labelledby="steps-title"><h2 id="steps-title">How it works</h2><ol><li><span>01</span><h3>Choose a moment</h3><p>Paste an RSS feed and pick the episode. Add the timestamp yourself.</p></li><li><span>02</span><h3>Write one question</h3><p>Record the takeaway in your own words. No transcript is needed.</p></li><li><span>03</span><h3>Recall three ideas</h3><p>Answer from memory. The next date changes with your result.</p></li></ol></section>
-    <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">Small on purpose</p><h2 id="boundaries-title">Your audio stays where it is</h2></div><div><p>The app reads podcast titles from the RSS feed you request. It stores written notes, not audio.</p><p>You write every question and takeaway. You do not need an account.</p></div></section>
-    <section class="price" aria-labelledby="price-title"><div><p class="eyebrow">Keep going when eight is not enough</p><h2 id="price-title">Unlimited clips for $9 once</h2><p>The one-time license removes only the clip limit. Reviews and exports stay free.</p></div><div class="price-actions"><a class="button primary" href="${buyUrl()}">Buy unlimited — $9 once</a><details id="restore-license" class="restore-panel"><summary>Have a license?</summary><form id="license-form" class="license-form"><label for="license-token">License token</label><div class="inline-form"><input id="license-token" name="token" autocomplete="off" required aria-describedby="license-help license-status"><button type="submit" aria-label="Verify license">Verify license</button></div><p id="license-help" class="field-help">Paste the token from your purchase email.</p><p id="license-status" class="form-status" aria-live="polite"></p></form></details><p class="fine">Sociobot handles checkout. <a href="/privacy" data-link>Privacy</a> · <a href="/terms" data-link>Terms</a></p></div></section>`);
+    <section class="steps" aria-labelledby="steps-title"><h2 id="steps-title">How it works</h2><ol><li><span>01</span><h3>Choose a moment</h3><p>Add a podcast feed and pick the episode. Add the timestamp yourself.</p></li><li><span>02</span><h3>Write one question</h3><p>Record the takeaway in your own words. No transcript is needed.</p></li><li><span>03</span><h3>Recall three ideas</h3><p>Answer from memory. Your next review is based on your answer.</p></li></ol></section>
+    <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the app stores</p><h2 id="boundaries-title">Your audio stays where it is</h2></div><div><p>The app reads podcast titles from the feed address you request. It stores written notes, not audio.</p><p>You write every question and takeaway. You do not need an account.</p></div></section>
+    <section class="price" aria-labelledby="price-title"><div><p class="eyebrow">Unlimited clip license</p><h2 id="price-title">Unlimited clips for $9 once</h2><p>The one-time license removes only the clip limit. Reviews and exports stay free.</p></div><div class="price-actions"><a class="button primary" href="${buyUrl()}">Buy unlimited — $9 once</a><details id="restore-license" class="restore-panel"><summary>Restore a license</summary><form id="license-form" class="license-form"><label for="license-token">License token</label><div class="inline-form"><input id="license-token" name="token" autocomplete="off" required aria-describedby="license-help license-status"><button type="submit" aria-label="Verify license">Verify license</button></div><p id="license-help" class="field-help">Paste the token from your purchase email.</p><p id="license-status" class="form-status" aria-live="polite"></p></form></details><p class="fine">Sociobot handles checkout. <a href="/privacy" data-link>Privacy</a> · <a href="/terms" data-link>Terms</a></p></div></section>`);
 }
 
 function reviewMarkup(): string {
@@ -76,11 +102,11 @@ function libraryMarkup(): string {
 }
 
 function appPage(): string {
-  const unlocked = cachedUnlocked();
-  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p></div><div class="count-medallion" aria-label="${dueClips(state.clips).length} questions due"><strong>${dueClips(state.clips).length}</strong><span>due</span></div></div>
+  const unlocked = !demo && cachedUnlocked();
+  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${dueClips(state.clips).length} questions due"><strong>${dueClips(state.clips).length}</strong><span>due</span></div></div>
     ${reviewMarkup()}
     <section id="capture" class="capture" aria-labelledby="capture-title"><div class="section-heading"><div><p class="eyebrow">Capture a moment</p><h2 id="capture-title">Write the question only you need</h2></div><p>${unlocked ? 'Unlimited clips active.' : `${Math.max(0, 8 - state.clips.length)} of 8 free clip spaces remain.`}</p></div>
-      <form id="feed-form" class="feed-form"><label for="feed-url">Podcast RSS feed</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">The feed is requested only when you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>
+      <form id="feed-form" class="feed-form"><label for="feed-url">Podcast feed address</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">Paste the show’s feed address. If you do not have it, enter the podcast and episode below.</p><p class="field-help">The feed is requested only when you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>
       <form id="clip-form" class="clip-form"><div class="form-grid"><label>Podcast name<input name="podcast" required maxlength="100" autocomplete="off"></label><label>Episode title<input name="episode" required maxlength="160" autocomplete="off"></label><label>Timestamp<input name="timestamp" required inputmode="numeric" placeholder="12:34" pattern="([0-9]+:)?[0-5]?[0-9]:[0-5][0-9]" aria-describedby="timestamp-help"><span id="timestamp-help" class="field-help">Use minutes:seconds or hours:minutes:seconds.</span></label><label>Episode link <span class="optional">optional</span><input name="episodeUrl" type="url" autocomplete="url"></label></div><label>Your recall question<textarea name="prompt" required maxlength="240" rows="3"></textarea></label><label>Your takeaway<textarea name="takeaway" required maxlength="500" rows="4"></textarea></label><p id="clip-status" class="form-status" aria-live="polite"></p><button class="button primary" type="submit">Save recall question</button></form>
     </section>
     <section class="library" aria-labelledby="library-title"><div class="section-heading"><div><p class="eyebrow">Your library</p><h2 id="library-title">Saved recall questions</h2></div><div class="export-actions"><button data-action="export-md">Export Markdown</button><button data-action="export-csv">Export CSV</button><button data-action="export-json">Export backup</button><label class="file-button">Import backup<input id="import-file" type="file" accept="application/json,.json"></label></div></div>${libraryMarkup()}</section>
@@ -88,23 +114,22 @@ function appPage(): string {
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates live in IndexedDB. We do not receive them.</p><h2>When the app uses the network</h2><p>The app requests an RSS URL only after you choose Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses a separate browser database. Resetting the demo deletes that database.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 28 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Privacy without an account</h1><p class="lede">Podcast Recall Loop stores your questions in this browser.</p><h2>What stays on your device</h2><p>Your clips, questions, takeaways, and review dates stay in this browser. We do not receive them.</p><h2>When the app uses the network</h2><p>The app requests a feed address only after you choose Find episodes. A license check sends your token to Sociobot at most once each day.</p><h2>Payment</h2><p>Sociobot checkout handles payment details. This app stores only your license token in this browser.</p><h2>Demo data</h2><p>The demo uses separate browser storage. Resetting it or starting for real deletes its sample changes. It never reads or writes your notes or license.</p><h2>Your control</h2><p>Export a backup from the recall page. Clear this site’s browser data to remove all local notes and licenses.</p><p>Last updated: 29 August 2026.</p></article>`);
 }
 
 function terms(): string {
-  return shell(`<article class="legal"><h1 tabindex="-1">Terms for using the recall loop</h1><p class="lede">Use the app for your own lawful podcast notes.</p><h2>Your content</h2><p>You keep ownership of every question and takeaway you write. You are responsible for your notes and backups.</p><h2>Podcast data</h2><p>The app reads public RSS metadata you request. It does not grant rights to podcast audio or publisher material.</p><h2>One-time license</h2><p>A valid $9 license removes the eight-clip limit. Sociobot checkout handles payment for the license.</p><h2>No warranty</h2><p>The software is provided as is under the MIT License. Keep an exported backup of important notes.</p><h2>Changes</h2><p>Material changes will be dated on this page. Continued use means you accept the current terms.</p><p>Last updated: 28 August 2026.</p></article>`);
+  return shell(`<article class="legal"><h1 tabindex="-1">Terms for Podcast Recall Loop</h1><p class="lede">Use the app for your own lawful podcast notes.</p><h2>Your content</h2><p>You keep ownership of every question and takeaway you write. You are responsible for your notes and backups.</p><h2>Podcast data</h2><p>The app reads public podcast details from the feed address you request. It does not grant rights to podcast audio or publisher material.</p><h2>One-time license</h2><p>A valid $9 license removes the eight-clip limit. Sociobot checkout handles payment for the license.</p><h2>No warranty</h2><p>The software is provided as is under the MIT License. Keep an exported backup of important notes.</p><h2>Changes</h2><p>Material changes will be dated on this page. Continued use means you accept the current terms.</p><p>Last updated: 29 August 2026.</p></article>`);
 }
 
 function notFound(): string {
-  return shell(`<section class="not-found"><div class="broken-loop" aria-hidden="true"></div><p class="eyebrow">404 · The loop broke here</p><h1 tabindex="-1">This page is not in the queue</h1><p>The address may be old or mistyped.</p><a class="button primary" href="/" data-link>Return home</a></section>`);
+  return shell(`<section class="not-found"><div class="broken-loop" aria-hidden="true"></div><p class="eyebrow">404 · Page not found</p><h1 tabindex="-1">This page could not be found</h1><p>The address may be old or mistyped.</p><a class="button primary" href="/" data-link>Return home</a></section>`);
 }
 
 async function render(announce = true): Promise<void> {
   const path = location.pathname.replace(/\/$/, '') || '/';
   demo = path === '/demo' || new URL(location.href).searchParams.get('demo') === '1';
   const viewPath = demo ? '/demo' : path;
-  document.title = routeTitle(viewPath);
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')!.href = `https://podcast-recall-loop.sociobot.in${path}`;
+  setRouteMetadata(viewPath === '/demo' ? '/demo' : path);
   if (viewPath === '/demo' || viewPath === '/app') {
     try { state = await loadState(demo); } catch { state = { clips: [] }; }
     app.innerHTML = appPage();
@@ -156,7 +181,7 @@ function bindForms(): void {
     const status = form.querySelector<HTMLParagraphElement>('#feed-status')!;
     const picker = form.querySelector<HTMLDivElement>('#episode-picker')!;
     const url = String(new FormData(form).get('feedUrl') || '').trim();
-    if (!url) { status.textContent = 'Enter the podcast RSS address, then try again.'; return; }
+    if (!url) { status.textContent = 'Enter the podcast feed address, then try again.'; return; }
     status.textContent = 'Looking for recent episodes…'; picker.replaceChildren();
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
@@ -187,7 +212,7 @@ function bindForms(): void {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
     const status = form.querySelector<HTMLParagraphElement>('#clip-status')!;
-    if (!cachedUnlocked() && state.clips.length >= 8) { status.textContent = 'The free library holds eight clips. Export your notes or delete one to add another.'; return; }
+    if ((demo || !cachedUnlocked()) && state.clips.length >= 8) { status.textContent = 'The free library holds eight clips. Export your notes or delete one to add another.'; return; }
     const data = new FormData(form);
     const seconds = parseTimestamp(String(data.get('timestamp') || ''));
     if (seconds === null) { status.textContent = 'The timestamp format is not valid. Use 12:34 or 1:12:34.'; return; }
@@ -237,7 +262,14 @@ document.addEventListener('click', async event => {
   if (action === 'export-csv') download('podcast-recall-clips.csv', 'text/csv', toCsv(state.clips));
   if (action === 'export-md') download('podcast-recall-clips.md', 'text/markdown', toMarkdown(state.clips));
   if (action === 'export-json') download('podcast-recall-backup.json', 'application/json', JSON.stringify(state, null, 2));
+  if (action === 'export-reminder') {
+    const start = new Date(); start.setDate(start.getDate() + 1); start.setHours(9, 0, 0, 0);
+    const stamp = start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    download('podcast-recall-reminder.ics', 'text/calendar;charset=utf-8', `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Podcast Recall Loop//EN\r\nBEGIN:VEVENT\r\nUID:podcast-recall-loop-daily\r\nDTSTAMP:${stamp}\r\nDTSTART:${stamp}\r\nRRULE:FREQ=DAILY\r\nSUMMARY:Recall three podcast ideas\r\nURL:https://podcast-recall-loop.sociobot.in/app\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`);
+    showToast('Daily calendar reminder downloaded.');
+  }
   if (action === 'reset-demo') { await resetDemo(); state = await loadState(true); revealedId = ''; await render(false); showToast('Demo reset to five sample clips.'); }
+  if (action === 'leave-demo') { await resetDemo(); history.pushState({}, '', '/app'); revealedId = ''; await render(); window.scrollTo(0, 0); }
   if (action === 'apply-update') {
     const registration = await navigator.serviceWorker.getRegistration();
     const waiting = registration?.waiting;
@@ -263,11 +295,12 @@ async function registerServiceWorker(): Promise<void> {
   registration.addEventListener('updatefound', () => registration.installing?.addEventListener('statechange', () => { if (registration.waiting && navigator.serviceWorker.controller) promptUpdate(); }));
 }
 
-acceptLicenseFromUrl();
-const initiallyUnlocked = cachedUnlocked();
+const startsInDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URL(location.href).searchParams.get('demo') === '1';
+if (!startsInDemo) acceptLicenseFromUrl();
+const initiallyUnlocked = !startsInDemo && cachedUnlocked();
 await render(false);
-void verifyLicense().then(valid => {
+if (!startsInDemo) void verifyLicense().then(valid => {
   licenseInactive = initiallyUnlocked && !valid;
-  if (valid !== initiallyUnlocked && (location.pathname === '/app' || location.pathname === '/demo')) render(false);
+  if (valid !== initiallyUnlocked && location.pathname === '/app') render(false);
 });
 void registerServiceWorker();
