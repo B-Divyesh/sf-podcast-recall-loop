@@ -84,7 +84,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.5 · Generated art disclosed in the design notes.</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.6</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 

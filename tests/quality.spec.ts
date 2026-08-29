@@ -198,6 +198,15 @@ test('footer uses the valid canonical factory hostname', async ({ page, request 
   expect(response.ok()).toBe(true);
 });
 
+test('every route shows the build version without referring to private design notes', async ({ page }) => {
+  for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
+    await page.goto(route);
+    const footer = page.locator('footer.site-footer');
+    await expect(footer.getByText('Version 1.0.6', { exact: true })).toBeVisible();
+    await expect(footer).not.toContainText('design notes');
+  }
+});
+
 async function saveClip(page: import('@playwright/test').Page, question: string): Promise<void> {
   await page.getByLabel('Podcast name').fill('The Useful Hour');
   await page.getByLabel('Episode title').fill('A durable idea');

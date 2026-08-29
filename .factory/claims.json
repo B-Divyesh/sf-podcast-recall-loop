@@ -44,7 +44,7 @@
   {
     "id": "daily-three",
     "claim": "The daily recall queue presents no more than three due questions",
-    "where": "landing, app heading, README",
+    "where": "landing, app heading, README, catalog description",
     "test": "npm test -- --grep @claim:daily-three",
     "sandbox": "fresh /demo sample with all five clips made overdue before the daily snapshot; complete three, reload into the caught-up state, then advance the stored local day and assert the two deferred clips appear"
   },

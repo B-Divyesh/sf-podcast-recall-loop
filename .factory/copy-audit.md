@@ -63,7 +63,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Three podcast ideas, recalled daily. | 5 | Pass |
 | Privacy / Terms | 1 each | Pass; destinations |
 | Built by Param Factory | 4 | Pass |
-| Version 1.0.5 · Generated art disclosed in the design notes. | 9 | Pass |
+| Version 1.0.6 | 2 | Pass; build id without an inaccessible internal reference |
 
 ## Metadata and catalog
 
@@ -72,7 +72,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop — Remember podcast ideas | 7 | Pass; title under 60 characters |
 | Save a podcast timestamp, write your own question, and recall three ideas each day. | 14 | Pass; meta description |
 | Turn podcast moments into three daily recall questions. | 8 | Pass; social description |
-| Turn podcast moments into up to three daily recall questions. | 10 | Pass; verb-first catalog line, 62 characters |
+| Save podcast moments and recall up to three questions each day. | 11 | Pass; verb-first catalog line, 61 characters |
 
 ## Terminology
 
