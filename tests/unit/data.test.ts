@@ -37,4 +37,16 @@ describe('recall data helpers', () => {
     expect(dailyQueue(state, new Date('2026-08-29T18:00:00')).clips).toHaveLength(0);
     expect(dailyQueue(state, new Date('2026-08-30T08:00:00')).clips).toHaveLength(2);
   });
+
+  test('counts a deleted queued question as completed for the day', () => {
+    const state = { clips: structuredClone(sampleClips) };
+    state.clips.forEach(clip => { clip.dueAt = '2020-01-01T08:00:00.000Z'; });
+    const queue = dailyQueue(state, new Date('2026-08-29T12:00:00'));
+    const removedId = queue.clips[0]!.id;
+    completeDailyQueueItem(state, removedId);
+    state.clips = state.clips.filter(clip => clip.id !== removedId);
+    const afterDelete = dailyQueue(state, new Date('2026-08-29T12:01:00'));
+    expect(afterDelete.completed).toBe(1);
+    expect(afterDelete.clips).toHaveLength(2);
+  });
 });

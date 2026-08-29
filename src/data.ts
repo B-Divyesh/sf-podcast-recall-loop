@@ -86,8 +86,9 @@ export function dailyQueue(state: AppState, now = new Date()): DailyQueueView {
   const queue = state.dailyQueue;
   if (!queue) return { clips: [], completed: 0, changed };
 
-  const validIds = new Set(state.clips.map(clip => clip.id));
-  const knownCompleted = queue.completedIds.filter(id => queue.clipIds.includes(id) && validIds.has(id));
+  // Keep a completed ID even if its clip was subsequently deleted: deleting a
+  // prompt is an intentional way to clear it from today's fixed snapshot.
+  const knownCompleted = queue.completedIds.filter(id => queue.clipIds.includes(id));
   if (knownCompleted.length !== queue.completedIds.length) {
     queue.completedIds = knownCompleted;
     changed = true;
