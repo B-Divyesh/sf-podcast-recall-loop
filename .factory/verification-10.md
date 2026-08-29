@@ -1,7 +1,7 @@
 # Independent verification 10 — PASS
 
-**Candidate:** `0a0979298bf2b61d675d13783e5c503145e8ce0c`  
-**Live URL:** <https://podcast-recall-loop.sociobot.in>  
+**Candidate:** `0a0979298bf2b61d675d13783e5c503145e8ce0c`
+**Live URL:** <https://podcast-recall-loop.sociobot.in>
 **Verified:** 29 August 2026 UTC from a clean checkout
 
 ## Release decision
