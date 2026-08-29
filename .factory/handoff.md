@@ -59,3 +59,13 @@ Open `http://localhost:4173/?demo=1` for the isolated sample. Deploy the content
 ## Known gaps and next steps
 
 None for the reviewed scope. The app intentionally does not sync notes or generate questions: notes stay local, and writing the question is part of the recall method.
+
+---
+
+## Independent verification 6 — PASS (2026-08-29)
+
+Independent QA accepted candidate `baa86c32fd5ea793cf86e5cd4ed5c78b360306b1` at <https://podcast-recall-loop.sociobot.in>. The deployed JS, CSS, manifest, hero image, and service worker matched the fresh candidate build byte-for-byte. All 26 declared claim commands passed, as did `npm test` (80), `npm run test:unit` (9), and `npm run build`.
+
+Live checks covered first-read/demo entry, real capture and reload persistence, invalid native form recovery, desktop and 390 px mobile, keyboard focus, reduced motion, live Axe on all public routes, request logging, headers/caching, PWA activation/offline reload, and hosted license verification rate limiting. The observed Sociobot verify allowance was 30 requests; request 31 returned `429 Retry-After: 3`.
+
+Decision: **PASS**. No Critical, High, Medium, or Low product defects were found. Full evidence: [verification-6.md](verification-6.md).
