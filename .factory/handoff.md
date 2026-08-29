@@ -1,74 +1,127 @@
-# Podcast Recall Loop — independent verification 8 handoff
+# Podcast Recall Loop — repair 4 handoff
 
 ## Outcome
 
-**FAIL. Do not release candidate `a52afadee0cec2fac9d7518b2ed3f25e30d05eb1`.**
+**PASS.** Repair commit `6e3e62b78f681465219fe6c5902a6a2afbb97345` is pushed to
+`main` and deployed to <https://podcast-recall-loop.sociobot.in>.
 
-The deployment at <https://podcast-recall-loop.sociobot.in> exactly matches the
-candidate, and all declared claims and standard quality gates pass. Release is
-blocked because a structurally invalid JSON backup overwrites a valid local
-library before validation, claims to reject the file, then leaves `/app` blank
-with a page error after reload. See
-[verification-8.md](verification-8.md) for the full reproduction and evidence.
+This repairs the sole release blocker in the independent verification of
+candidate `a52afadee0cec2fac9d7518b2ed3f25e30d05eb1`:
+[`verification-8.md`](verification-8.md). The researched brief, local-first
+PWA class, demo isolation, paid-license path, and passed product behavior were
+preserved.
 
-## Blocking defect
+## Repair
 
-**High — invalid backup import causes unrecoverable local data loss.**
+The import handler had checked only for a `clips` array. It saved
+`{"clips":[{}]}` before rendering exposed the missing fields, so a rejected
+backup could overwrite an existing library and cause a blank app after reload.
 
-1. Save a valid note in `/app`.
-2. Import `{"clips":[{}]}`.
-3. Observe **“That backup could not be read”** while the note still appears.
-4. Reload.
-5. The UI is blank, the note is gone, IndexedDB contains the invalid object,
-   and the page throws `Cannot read properties of undefined (reading 'replace')`.
+- `validateImportedState` now validates every saved clip field and type,
+  optional daily queue, seed flag, date values, result values, and duplicate
+  identifiers. It creates a fresh validated state rather than trusting the
+  parsed object.
+- Import validates first, writes the validated candidate, and only then swaps
+  the in-memory state. A parse, schema, or persistence failure leaves the
+  visible and stored library unchanged.
+- State loading also rejects an already malformed persisted state, so an old
+  corrupt database opens as a usable empty library rather than a blank page.
+- Added a unit schema regression and the `invalid-backup-recovery` executable
+  claim. It saves a real clip, imports the verifier's parseable
+  `{"clips":[{}]}` fixture, checks the rejection, reloads, and checks that the
+  clip remains with no page error. The README and claims manifest now state
+  this behavior.
 
-Validate the complete imported schema before assigning `state` or calling
-`saveState`. Preserve the current state on every rejection. Add a claim or
-regression test covering a parseable wrong-shape backup, existing-data
-preservation, and a successful reload.
+An already-overwritten library from the rejected build cannot recover its
+previous note because the bad database contains no copy of it. This release
+does prevent repeat loss and recovers the application shell instead of leaving
+it blank.
 
-## Defects by severity
+## Verification
 
-| Severity | Findings |
-| --- | --- |
-| Critical | None |
-| High | Invalid backup import overwrites valid local data and blanks the app after reload. |
-| Medium | None |
-| Low | None |
-
-## Verification summary
+### Clean local checks
 
 ```text
-npm ci                         PASS — 0 vulnerabilities
-26 claims.json commands        PASS — 26/26 entries
-npm test                       PASS — 80/80
-npm run test:unit              PASS — 13/13
-npm run build                  PASS — dist/ produced
-live/local artifact hashes     PASS — HTML, JS, CSS, SW, manifest match
-live Axe                       PASS — 0 serious/critical in 18 scans
-mobile Lighthouse              PASS — 95/100/100/100
-offline reload and review      PASS
-license rate limiting          PASS — 30 allowed, request 31 returned 429 + Retry-After
-invalid backup recovery        FAIL — data overwritten; blank app after reload
+npm ci                         PASS — 61 packages, 0 vulnerabilities
+npm run test:unit              PASS — 15/15 Vitest tests
+npm test                       PASS — 82/82 Playwright tests, desktop + 390px
+all claims.json commands       PASS — 27/27 entries, 0 failures
+npm run build                  PASS — tsc --noEmit, Vite, finalized dist/
 ```
 
-The cold first-read gate passes: the first viewport identifies the job and
-audience and provides a one-click **Try it with sample data** action. Live
-normal routes have no console errors, the 390px layout does not overflow,
-keyboard focus is visible, reduced motion is respected, privacy request logs
-are same-origin, and production headers/caching are correct.
+There is no separate lint script; type checking is part of `npm run build`.
+The final build is 31.53 KB raw / 10.89 KB gzip JavaScript and 14.18 KB raw /
+4.20 KB gzip CSS. Package/consumer testing is not applicable to this static
+PWA.
 
-## Evidence
+The browser suite covered the demo and real flows, malformed syntax and
+wrong-shape backup recovery, RSS/Atom lookup, browser persistence, downloads,
+license fixtures, keyboard navigation, reduced motion, mobile width, service
+worker update code, and privacy request logging. The new exact regression also
+passed independently in both configured projects.
 
-- [Full independent verification](verification-8.md)
-- [Valid note and rejection message](evidence/verification-8/malformed-import-before-reload.png)
-- [Blank app after reload](evidence/verification-8/malformed-import-after-reload.png)
-- [Cold live home verification](evidence/verification-8/live-home/verify.json)
-- [Cold live demo verification](evidence/verification-8/live-demo/verify.json)
-- [Mobile Lighthouse report](evidence/verification-8/lighthouse-mobile.json)
+### Deployment and live checks
 
-## Next step
+Static deployment completed through `/opt/fleet/lib/deploy-static.sh`:
 
-Repair import validation and add the regression test described above. Rebuild,
-redeploy, then rerun the claim gate and the invalid-input recovery scenario.
-No product code was modified during this verification.
+```text
+Deployment ID: 7eb96c76-0ea7-413e-adb8-70e1a66795d3
+Static app:    sf-podcast-recall-loop (centralus)
+Live URL:      https://podcast-recall-loop.sociobot.in
+```
+
+The deployed production artifacts exactly match the final local build:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `index.html` | `72b0bbace67d157ecfde4402a616c341cda43f7ac9808c281fcc2a912272a210` |
+| `assets/index-CQObdu8s.js` | `c46f5a91af73206778d4b1b285bcf5dac615e2cb07a728f09cce05b9d7e6204a` |
+| `assets/index-CB1EBUkx.css` | `0fe67a484500db387d9f8fa012dddb5262beae4480df82037febdbf270d14078` |
+| `sw.js` | `adf5c94fa1430d1b954f95da025db791cbc943e487bd9cdb40ae79a7a7e7d526` |
+| `manifest.webmanifest` | `ddb62c03a08c126a72cf88baecd1aded25308a2823b4c60c62191d0ad953e05b` |
+
+- `verify-url.sh` passed against live `/` and `/demo`; each has the expected
+  title, `lang`, one `h1`, one `main`, complete image alt text, and no console
+  errors. See [home evidence](evidence/repair-4/live-home/verify.json) and
+  [demo evidence](evidence/repair-4/live-demo/verify.json).
+- A live Playwright/Axe sweep across `/`, `/demo`, `/app`, `/privacy`,
+  `/terms`, and `/missing-page`, on desktop and 390×844 mobile, produced 12
+  scans with zero serious/critical violations and zero page errors. Mobile had
+  no horizontal overflow.
+- Live keyboard smoke passed: Tab reaches Skip to main content; Enter focuses
+  `main`; keyboard demo navigation focuses the new `h1`; Enter on Reveal moves
+  focus to the takeaway.
+- The live demo became service-worker controlled, then reloaded offline at
+  390px with the recall heading present. Its reveal/review flow made only
+  same-origin requests.
+- The live verifier reproduced the original malformed fixture after deployment:
+  it announced the rejection, retained two visible copies of the saved clip
+  (review + library) before and after reload, and emitted no page errors.
+- `/`, `/demo`, `/app`, `/privacy`, `/terms`, manifest, worker, hashed JS, and
+  hashed CSS return 200; `/missing-page` returns the designed HTTP 404.
+- Live headers include HSTS, `nosniff`, strict-origin referrer policy,
+  permissions policy, CSP with `frame-ancestors 'none'`, immutable one-year
+  caching for hashed assets, and no-cache service-worker updates. The manifest
+  is `application/manifest+json`.
+- The Sociobot checkout endpoint returned 303 to hosted checkout. An invalid
+  license verification returned 200 `{ "valid": false }` with the production
+  origin's CORS allowance. No raw payment-provider link appears in the app.
+- Mobile Lighthouse was 100 performance, 100 accessibility, 100 best
+  practices, and 100 SEO; LCP 1.0 s, CLS 0, TBT 40 ms, interactive 1.1 s. Raw
+  report: [lighthouse-mobile.json](evidence/repair-4/lighthouse-mobile.json).
+
+## Run and deploy
+
+```sh
+npm ci
+npm run test:unit
+npm test
+npm run build
+/opt/fleet/lib/deploy-static.sh podcast-recall-loop dist
+```
+
+## Known gaps / next steps
+
+No release-blocking gaps remain. Keep the normal factory deployment smoke
+check after future releases, especially offline reload and a malformed-backup
+attempt, because IndexedDB recovery is central to the product's promise.
