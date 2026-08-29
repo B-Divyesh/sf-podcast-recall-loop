@@ -1,48 +1,56 @@
-# Podcast Recall Loop — polish round 2 handoff
+# Podcast Recall Loop — polish round 3 handoff
 
 ## Outcome
 
-All findings in adversarial reviews 1 and 2 are resolved. Version 1.0.3 is deployed at <https://podcast-recall-loop.sociobot.in> with the original glacial ceramic identity and PWA/local-first architecture intact. No known acceptance gap remains.
+All findings from adversarial reviews 1–3 are resolved in version 1.0.4. The static PWA is deployed at <https://podcast-recall-loop.sociobot.in>. Its local-first architecture and glacial ceramic visual identity remain intact.
+
+The round-3 implementation is commit `d48017813962dd6f3e48a9a52a153498faeaff26`. Azure Static Web Apps deployment `926d38f5-28cb-40a1-b7c0-607c74f157f1` completed on 29 August 2026.
 
 ## What changed
 
-- Added independent `feed-explicit-request` and `atom-lookup` claims with recorded RSS/Atom fixtures and observable browser tests.
-- Rewrote the feed privacy promise consistently: the app contacts a feed address only after **Find episodes** is pressed.
-- Added manual History API scroll state. Back and Forward now restore the prior position while route changes still focus the page heading.
-- Made **Try it with sample data** open the explicit `?demo=1` sandbox. Any navigation out of demo deletes its database; real notes and license keys remain untouched.
-- Updated the catalog description, README, demo guide, copy audit, version, claims registry, and release evidence.
+- Closed F-3-1 at the navigation boundary. The actual **Restore a license** anchor, checkout, **Start for real**, internal routes, and external links now discard changed demo state before leaving.
+- Expanded `@claim:demo-isolation` to exercise the visible restore anchor, direct checkout exit, and banner exit after changing the sample. Each return starts with five clips and three due questions.
+- Kept real notes and license keys byte-for-byte unchanged during the demo, including `/?demo=1&license=...`.
+- Made the restore fragment open its disclosure and focus the license-token field.
+- Rewrote the first-screen action result as **“Opens five sample clips from fictional shows. No setup.”**
+- Updated the claim registry, demo guide, README, copy audit, catalog description, and version.
+- Removed inline CSS from the offline fallback, added a CSP-safe product-specific stylesheet, and precached it.
+- Preserved the asymmetric porcelain surfaces, glacial palette, original still-life, serif recall prompts, and reduced-motion treatment described in `.factory/design.md`.
 
-Implementation commit: `7432a55c286ccebd7d65541bcd426ece04650fdc`
-Production deployment: `51c0d194-7ccd-4519-8e05-22d7a7c4936e`
+The cumulative finding map is [`.factory/polish-3.md`](polish-3.md).
 
 ## Verification
 
-A fresh clone of implementation commit `7432a55c286ccebd7d65541bcd426ece04650fdc` was installed with `npm ci`.
+A clean clone of implementation commit `d48017813962dd6f3e48a9a52a153498faeaff26` was installed with `npm ci`.
 
 ```text
-all 26 commands in .factory/claims.json     PASS
+all 26 commands in .factory/claims.json     PASS independently
 npm test                                    80 passed
-npm run test:unit                           9 passed
-npm run build                               PASS; dist/ produced
+npm run test:unit                           10 passed
+npm run build                               PASS; dist/index.html produced
 npm audit --audit-level=high                0 vulnerabilities
 ```
 
-The production build is 28.30 KB JavaScript and 14.18 KB CSS raw (9.90 KB and 4.20 KB gzip). The deployed JavaScript SHA-256 matches local: `b9f0c6db7ab1371ada509f3d9f79ad097480c5c450a17573bf6cfbf4a48ddc55`.
+The production build contains 28.78 KB JavaScript and 14.18 KB CSS raw (10.04 KB and 4.20 KB gzip). This is below the 200 KB JS and 50 KB CSS budgets. Product images are 9.8–25.0 KB each.
 
-Live mobile Lighthouse: performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.09 s, CLS 0, total blocking time 14 ms. Live Axe checks found zero serious/critical findings on `/`, `/demo`, `/app`, `/privacy`, `/terms`, and the 404. Normal routes logged no console errors.
+Live mobile Lighthouse results: 100 performance, 100 accessibility, 100 best practices, and 100 SEO. LCP was 1.0 s; CLS was 0; total blocking time was 0 ms. A navigation audit does not report INP.
 
-Production checks confirmed:
+Cold production checks confirmed:
 
-- `/?demo=1` opens five sample clips with three due, the persistent demo banner, Reset demo, and Start for real.
-- Real IndexedDB and license storage stay byte-for-byte unchanged through demo entry, editing, reset, and exit; no external demo request occurs.
-- A feed address receives zero requests before **Find episodes** and exactly one after it.
-- The Atom fixture fills podcast, episode, and link fields.
-- Back navigation restores `scrollY` from 1200 to 1200 and leaves the returned page heading focused.
-- Offline reload retains the sample queue and recall action.
-- `/missing-page` returns HTTP 404; all public routes, manifest, robots, and sitemap return 200.
-- Sociobot checkout redirects to the hosted product showing Podcast Recall Loop Unlimited, $9.00, and one-time purchase.
+- The 390×844 first screen shows the job, audience, sample action, its result, and all three facts without scrolling or horizontal overflow.
+- `/?demo=1` opens five sample clips with three due questions and the persistent demo/reset/start banner.
+- After changing the sample, **Restore a license**, checkout, and **Start for real** each discard it; every return has five clips and three due.
+- The restore destination is `/#restore-license`; its form opens and its input receives focus.
+- Real IndexedDB and license storage remain unchanged throughout demo use; no external request occurs before a deliberate exit.
+- `/`, `/demo`, `/app`, `/privacy`, and `/terms` return 200. `/missing-page` returns 404 with the designed recovery page.
+- Every route has its own title, description, canonical, Open Graph title/URL, one `h1`, and one `main`.
+- Back navigation restores `scrollY` from 1200 to 1200 and keeps route-heading focus.
+- Live Axe checks found zero serious/critical findings on every public route and the 404. Normal routes logged no console errors.
+- A controlled offline reload retains the sample queue, offline notice, and recall action.
+- The checkout endpoint returns 303 to the hosted checkout, which shows Podcast Recall Loop Unlimited, $9, and one-time purchase.
+- Live JS and CSS hashes match the local `dist/` files exactly.
 
-Evidence is under [`.factory/evidence/polish-2`](evidence/polish-2/). The complete finding map is [`.factory/polish-2.md`](polish-2.md).
+Evidence is under [`.factory/evidence/polish-3`](evidence/polish-3/). Key files are the [clean claim log](evidence/polish-3/clean-claims.json), [clean aggregate suite](evidence/polish-3/clean-suite.json), [live browser checks](evidence/polish-3/live/browser-checks.json), [Lighthouse summary](evidence/polish-3/live/lighthouse-summary.json), and [live URL verifier](evidence/polish-3/live/verify.json).
 
 ## Run and verify
 
@@ -58,22 +66,4 @@ Open `http://localhost:4173/?demo=1` for the isolated sample. Deploy the content
 
 ## Known gaps and next steps
 
-None for the reviewed scope. The app intentionally does not sync notes or generate questions: notes stay local, and writing the question is part of the recall method.
-
----
-
-## Independent verification 6 — PASS (2026-08-29)
-
-Independent QA accepted candidate `baa86c32fd5ea793cf86e5cd4ed5c78b360306b1` at <https://podcast-recall-loop.sociobot.in>. The deployed JS, CSS, manifest, hero image, and service worker matched the fresh candidate build byte-for-byte. All 26 declared claim commands passed, as did `npm test` (80), `npm run test:unit` (9), and `npm run build`.
-
-Live checks covered first-read/demo entry, real capture and reload persistence, invalid native form recovery, desktop and 390 px mobile, keyboard focus, reduced motion, live Axe on all public routes, request logging, headers/caching, PWA activation/offline reload, and hosted license verification rate limiting. The observed Sociobot verify allowance was 30 requests; request 31 returned `429 Retry-After: 3`.
-
-Decision: **PASS**. No Critical, High, Medium, or Low product defects were found. Full evidence: [verification-6.md](verification-6.md).
-
----
-
-## Adversarial review 3 — FAIL (2026-08-29)
-
-Review-only work; no product source was changed. A fresh clone at the review candidate passed `npm ci`, all 26 declared claim commands, `npm test` (80 tests), `npm run test:unit` (9 tests), and `npm run build` (with `dist/`). Cold live checks at 390px and desktop passed, as did normal demo reset, routing, metadata, links, and privacy request logging.
-
-The remaining blocking gap is [F-3-1 in review-3.md](review-3.md): the visible **Restore a license** link on `/demo` is an unhandled direct `/#restore-license` anchor. It bypasses `resetDemo()`, so a changed sample remains changed after returning to `/demo`. Repair every demo exit or remove the license/purchase exits in demo mode, add an actual-anchor regression test to `demo-isolation`, then rerun the full checklist.
+None for the reviewed scope. The product intentionally does not sync notes or generate questions: notes stay local, and writing the question is part of the recall method.

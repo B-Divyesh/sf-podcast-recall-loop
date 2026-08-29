@@ -1,0 +1,12 @@
+{
+  "initialStatus": 200,
+  "finalUrl": "https://checkout.dodopayments.com/session/cks_0NmRB5DnnMOzjDeujRBjS",
+  "title": "Sociobot | Checkout",
+  "showsProduct": true,
+  "showsNineDollars": true,
+  "showsOneTime": true,
+  "errors": [
+    "Permissions policy violation: accelerometer is not allowed in this document.",
+    "Permissions policy violation: accelerometer is not allowed in this document."
+  ]
+}

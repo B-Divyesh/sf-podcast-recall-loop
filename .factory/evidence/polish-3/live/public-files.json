@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/demo",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/app",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/privacy",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/terms",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "status": 200,
+    "type": "application/manifest+json"
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "type": "text/plain"
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "type": "text/xml"
+  },
+  {
+    "path": "/offline.html",
+    "status": 200,
+    "type": "text/html"
+  },
+  {
+    "path": "/offline.css",
+    "status": 200,
+    "type": "text/css"
+  },
+  {
+    "path": "/favicon.svg",
+    "status": 200,
+    "type": "image/svg+xml"
+  },
+  {
+    "path": "/apple-touch-icon.png",
+    "status": 200,
+    "type": "image/png"
+  }
+]

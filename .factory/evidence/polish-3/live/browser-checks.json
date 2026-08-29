@@ -1,0 +1,143 @@
+{
+  "firstScreen": {
+    "headline": "Remember what your podcasts taught you",
+    "audience": "For curious listeners who save good moments but forget the ideas.",
+    "action": "Try it with sample data",
+    "actionResult": "Opens five sample clips from fictional shows. No setup.",
+    "facts": [
+      "Notes stay in this browser.",
+      "Reviews work offline after your first visit.",
+      "The free library holds eight clips."
+    ],
+    "factsBottom": 700.5625,
+    "viewportHeight": 844,
+    "overflow": 0,
+    "consoleErrors": []
+  },
+  "demo": {
+    "entry": {
+      "url": "https://podcast-recall-loop.sociobot.in/?demo=1&license=ignored-demo-token",
+      "banner": "Demo — sample data, nothing is saved to your notes.\nReset demo\nStart for real",
+      "clips": true,
+      "due": true,
+      "unlimitedVisible": 0
+    },
+    "restore": {
+      "url": "https://podcast-recall-loop.sociobot.in/#restore-license",
+      "visible": true,
+      "focused": true
+    },
+    "afterRestore": {
+      "clips": true,
+      "due": true
+    },
+    "afterCheckout": {
+      "clips": true,
+      "due": true
+    },
+    "afterStart": {
+      "clips": true,
+      "due": true
+    },
+    "realStorageUnchanged": true,
+    "realDatabaseUnchanged": true,
+    "externalBeforeExit": []
+  },
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "description": "Save a podcast timestamp, write your own question, and recall three ideas each day. Your notes stay in this browser.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/",
+      "ogTitle": "Podcast Recall Loop — Remember podcast ideas",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    },
+    {
+      "path": "/demo",
+      "status": 200,
+      "title": "Demo — Podcast Recall Loop",
+      "description": "Try five sample podcast clips in a private demo.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/demo",
+      "ogTitle": "Demo — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/demo",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    },
+    {
+      "path": "/app",
+      "status": 200,
+      "title": "Recall queue — Podcast Recall Loop",
+      "description": "Save podcast moments and review up to three questions today.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/app",
+      "ogTitle": "Recall queue — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/app",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "title": "Privacy — Podcast Recall Loop",
+      "description": "See what Podcast Recall Loop stores in this browser.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/privacy",
+      "ogTitle": "Privacy — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/privacy",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "title": "Terms — Podcast Recall Loop",
+      "description": "Read the terms for Podcast Recall Loop.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/terms",
+      "ogTitle": "Terms — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/terms",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    },
+    {
+      "path": "/missing-page",
+      "status": 404,
+      "title": "Page not found — Podcast Recall Loop",
+      "description": "This Podcast Recall Loop page could not be found.",
+      "canonical": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "ogTitle": "Page not found — Podcast Recall Loop",
+      "ogUrl": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "seriousCriticalAxe": [],
+      "consoleErrors": []
+    }
+  ],
+  "navigation": {
+    "priorY": 1200,
+    "restoredY": 1200,
+    "privacyHeadingFocused": true,
+    "homeHeadingFocused": true
+  },
+  "offline": {
+    "title": "Demo — Podcast Recall Loop",
+    "notice": true,
+    "recall": true
+  }
+}

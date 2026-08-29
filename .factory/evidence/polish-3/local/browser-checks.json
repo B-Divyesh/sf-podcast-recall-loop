@@ -1,0 +1,90 @@
+{
+  "desktop": {
+    "title": "Podcast Recall Loop — Remember podcast ideas",
+    "errors": [],
+    "h1": 1,
+    "main": 1
+  },
+  "mobileFirstScreen": {
+    "title": "Podcast Recall Loop — Remember podcast ideas",
+    "headline": "Remember what your podcasts taught you",
+    "ctaVisible": true,
+    "factsBottom": 700.5625,
+    "ctaBottom": 451.546875,
+    "viewportHeight": 844,
+    "overflow": 0
+  },
+  "demoEntry": {
+    "url": "http://127.0.0.1:4173/?demo=1",
+    "banner": "Demo — sample data, nothing is saved to your notes.\nReset demo\nStart for real",
+    "clips": true,
+    "due": true
+  },
+  "dueAfterChange": "2 questions due",
+  "restoreExit": {
+    "url": "http://127.0.0.1:4173/#restore-license",
+    "formVisible": true,
+    "formFocused": true
+  },
+  "returnedDemo": {
+    "clips": true,
+    "due": true
+  },
+  "demoRequestsBeforeExternalExit": [],
+  "routes": [
+    {
+      "path": "/",
+      "title": "Podcast Recall Loop — Remember podcast ideas",
+      "canonical": "https://podcast-recall-loop.sociobot.in/",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    },
+    {
+      "path": "/demo",
+      "title": "Demo — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/demo",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    },
+    {
+      "path": "/app",
+      "title": "Recall queue — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/app",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    },
+    {
+      "path": "/privacy",
+      "title": "Privacy — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/privacy",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    },
+    {
+      "path": "/terms",
+      "title": "Terms — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/terms",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    },
+    {
+      "path": "/missing-page",
+      "title": "Page not found — Podcast Recall Loop",
+      "canonical": "https://podcast-recall-loop.sociobot.in/missing-page",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0
+    }
+  ],
+  "consoleErrors": [],
+  "offline": {
+    "title": "Demo — Podcast Recall Loop",
+    "notice": true,
+    "recall": true
+  }
+}
