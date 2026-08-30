@@ -48,8 +48,8 @@ try {
   });
   const homeResponse = await mobile.goto(`${baseUrl}/?cold=${Date.now()}`, { waitUntil: 'networkidle' });
   assert(homeResponse?.status() === 200, 'Cold home did not return 200.');
-  assert(await mobile.getByRole('heading', { level: 1 }).textContent() === 'Remember what your podcasts taught you', 'Home headline changed.');
-  await mobile.getByText('For curious listeners who save good moments but forget the ideas.').waitFor();
+  assert(await mobile.getByRole('heading', { level: 1 }).textContent() === 'Turn podcast moments into recall questions', 'Home headline changed.');
+  await mobile.getByText('For podcast listeners who save useful moments, then forget what they learned.').waitFor();
   const demoAction = mobile.getByRole('link', { name: 'Try it with sample data' });
   assert(await demoAction.getAttribute('href') === '/?demo=1', 'First-screen demo link is not ?demo=1.');
   for (const fact of ['Notes stay in this browser.', 'Reviews work offline after your first visit.', 'The free library holds eight clips.']) {
@@ -58,7 +58,7 @@ try {
   const factsBox = await mobile.locator('.plain-facts').boundingBox();
   assert(Boolean(factsBox) && factsBox.y + factsBox.height <= 844, 'First-screen facts fall below the 390x844 viewport.');
   assert(await mobile.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'Home overflows at 390px.');
-  await mobile.locator('footer.site-footer').getByText('Version 1.0.8', { exact: true }).waitFor();
+  await mobile.locator('footer.site-footer').getByText('Version 1.0.9', { exact: true }).waitFor();
   assert(!(await mobile.locator('footer.site-footer').innerText()).includes('design notes'), 'Footer still refers to design notes.');
   await mobile.screenshot({ path: `${evidenceDir}/live-home-mobile.png`, fullPage: true });
 
@@ -203,7 +203,7 @@ try {
     const footer = desktop.locator('footer.site-footer');
     await footer.getByRole('link', { name: 'Privacy' }).waitFor();
     await footer.getByRole('link', { name: 'Terms' }).waitFor();
-    await footer.getByText('Version 1.0.8', { exact: true }).waitFor();
+    await footer.getByText('Version 1.0.9', { exact: true }).waitFor();
     assert(!(await footer.innerText()).includes('design notes'), `${route} retains the inaccessible footer reference.`);
     const axe = await new AxeBuilder({ page: desktop }).analyze();
     const serious = axe.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''));
