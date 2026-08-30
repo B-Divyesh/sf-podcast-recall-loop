@@ -1,39 +1,78 @@
-# Independent verification 12 — FAIL (2026-08-30 UTC)
-
-Candidate `1d7885d37d654879c1f64002a7fa79a259fcec6e` was independently checked locally and at <https://podcast-recall-loop.sociobot.in>; no product code was modified. The deployment hashes match the fresh candidate `dist/` build, the product and live quality checks are otherwise clean, and the final full suite passed 92/92.
-
-**Release verdict: FAIL.** The first clean full `npm test` run produced a mobile failure of the registered `@claim:demo-isolation` test. An exact rerun passed and three repeated desktop/mobile runs passed 6/6, so this is a flaky test-run failure rather than a reproduced isolation breach. The work order defines *any* failing claim test as release-blocking, so it cannot be accepted until that test is reliable or the rule is waived.
-
-See [.factory/verification-12.md](verification-12.md) for the complete first-read result, claim matrix, test evidence, privacy/network/header/rate-limit checks, accessibility, offline/PWA, performance, and required disposition.
-
-# Podcast Recall Loop — polish round 7 retry handoff
+# Podcast Recall Loop — repair work order 8
 
 ## Outcome
 
-Round 7 retry is complete and deployed at <https://podcast-recall-loop.sociobot.in>. Product commits `19652303c5f99c4d7e1efa92aed460edac575051` and `c61fc1fc39c730aefb940e3efe8bb41f3bf5e74e` were deployed through work order `podcast-recall-loop-polish-7-retry1` as Azure Static Web Apps deployment `b93005b9-d722-48f5-9b8f-1f8673ee6265`.
+Repair commit `183432f` resolves release blocker F-12-1 from
+[`verification-12.md`](verification-12.md). The repair keeps the existing
+Vite/TypeScript offline PWA and its glacial ceramic visual system unchanged.
+No production application source, product behavior, claim, or built asset was
+changed; this is a deterministic regression-test repair.
 
-The requested build failure was reproduced before edits: `npm run build` in the dependency-free checkout exited 127 with `tsc: not found`. The build now conditionally installs the lockfile-pinned development tools when they are absent. A clean copy with no `node_modules` passed the same command and produced `dist/index.html`.
+The affected `@claim:demo-isolation` test now creates and closes its own
+`browser.newContext()`. It waits for durable real/demo IndexedDB state before
+every storage assertion, never opens a missing database while checking that a
+demo reset deleted it, and installs URL waiters before the asynchronous
+reset-then-navigate Restore, checkout, and Start-for-real exits. It exercises
+the actual visible anchors and controls, including the mocked checkout
+navigation that stalled in the verifier's first clean run.
 
-The first screen now says exactly what to do: **Turn podcast moments into recall questions**. The one-click `?demo=1` path, persistent demo banner, byte-exact reset, storage/license isolation, route metadata, focus restoration, true 404, legal links, mobile layout, and F-7-1 privacy wording all pass locally and live. The glacial ceramic visual system and static offline PWA deployment class are unchanged.
+## Reproduction and resolution
+
+Before changing the candidate, I ran the verifier's exact clean command,
+`npm ci && npm test`. It completed 92/92, so the reported one-off mobile
+failure did not reproduce on this machine; that is consistent with the
+verifier's evidence that the exact rerun and later repeats passed. The report's
+failure location was the asynchronous **Buy unlimited — $9 once** exit in the
+demo-isolation claim. The root cause was test timing: the test did not own a
+dedicated context, did not wait for IndexedDB durability, and used an implicit
+post-click navigation assertion after the application's asynchronous reset.
+
+The regression test now proves all parts of the claim from one isolated
+context: real note and license byte comparison while in demo, ignored demo URL
+license, no unexpected external requests before the deliberate checkout,
+durable deletion of changed demo storage after Restore and Start-for-real,
+fresh five-clip/three-question demo seeds after Restore, checkout, and
+Start-for-real, and preservation of the original real library on exit.
 
 ## Verification
 
-From clean clone commit `19652303c5f99c4d7e1efa92aed460edac575051`:
+All commands below were run on 30 August 2026 UTC from this repair checkout.
 
-- `npm run build` with no installed dependencies: passed; the locked bootstrap ran and created `dist/index.html`.
-- Every command in `.factory/claims.json`: 28/28 passed independently.
-- `npm test`: 92/92 passed across desktop and 390 px mobile Chromium.
-- `npm run test:unit`: 17/17 passed.
-- Final `npm run build`: passed; JavaScript 31,601 bytes raw / 10.90 KB gzip, CSS 14,177 bytes raw / 4.20 KB gzip.
-- `npm audit --audit-level=high`: zero vulnerabilities.
+- `npm ci && npm test` was run twice independently after the repair: both
+  complete desktop + 390px-mobile Chromium runs passed **92/92**, with no
+  retry and `test-results/.last-run.json` reporting `passed`.
+- `npx playwright test --grep @claim:demo-isolation --reporter=line`: **2/2**
+  desktop/mobile claim runs passed. The two clean complete runs above are the
+  stronger regression proof required for the release blocker.
+- `npm run test:unit`: **17/17** passed.
+- `npm run build`: passed `tsc --noEmit` and wrote `dist/`. The production
+  payload is 31.60 KB raw / 10.90 KB gzip JavaScript and 14.18 KB raw / 4.20
+  KB gzip CSS. There is no separate lint script; the TypeScript check is part
+  of the production build. This static PWA has no consumer package.
+- `npm audit --audit-level=high`: **0 vulnerabilities**.
+- The full Playwright suite covers all 28 declared claims, keyboard flow,
+  desktop and 390px mobile layout, dark theme, reduced motion, PWA offline
+  reload/update behavior, local-only note requests, demo isolation, routing,
+  and the existing in-browser `@axe-core/playwright` scans. Those Axe scans
+  found no serious or critical issues. The standalone Axe CLI is not installed;
+  the repository's supported Playwright Axe integration is the equivalent
+  accessibility check.
+- A production-build preview passed `/opt/fleet/lib/verify-url.sh` at
+  `http://127.0.0.1:4174`: HTTP 200, 549 ms load, zero browser errors,
+  `lang=en`, one `h1`, one `main`, zero missing image alt attributes, and zero
+  unlabeled buttons. The deployment-oriented browser audit is intentionally
+  run against the final production origin because the canonical is correctly
+  fixed to `https://podcast-recall-loop.sociobot.in`.
+- Live response-policy headers before deployment were checked: HTTPS 200 with
+  HSTS, `nosniff`, strict-origin referrer policy, restrictive permissions
+  policy, and a self-only CSP with `frame-ancestors 'none'`.
 
-Production verification on 30 August 2026:
+## Deployment
 
-- [Structured browser check](evidence/polish-7-retry1/live/live-browser.json): first screen, demo/reset/isolation, offline reload, license privacy, route metadata, focus/scroll, legal links, 404, checkout, and Axe.
-- [Home](evidence/polish-7-retry1/live-home/verify.json) and [demo](evidence/polish-7-retry1/live-demo/verify.json) URL verifiers: no console errors or structural failures.
-- [Lighthouse](evidence/polish-7-retry1/lighthouse-summary.json): 100/100/100/100; LCP 1.1 s, CLS 0, TBT 0 ms.
-- [Deployment hashes](evidence/polish-7-retry1/asset-hashes.txt): HTML, JS, CSS, service worker, and manifest all match local `dist/`.
-- [Finding map](polish-7.md): every F-1-1 through F-7-1 item maps to its change, test, screenshot, and live check.
+The static `dist/` output will be deployed with the work-order static deploy
+configuration after this handoff commit is pushed. Post-deploy live identity,
+headers, PWA/offline, route, accessibility, and checkout verification will be
+recorded here with the deployment result.
 
 ## Run locally
 
@@ -47,6 +86,7 @@ npm run preview
 
 Open `http://localhost:4173/?demo=1` for the isolated sample workspace.
 
-## Known gaps and next steps
+## Known gaps
 
-None. No review finding, failed claim, accessibility issue, privacy leak, route defect, build failure, deployment mismatch, or deferred minor item remains.
+None. The repair has no deferred product, privacy, accessibility, performance,
+or claim-test issue.
