@@ -1,6 +1,31 @@
-# Podcast Recall Loop — repair work order 9
+# Podcast Recall Loop — independent verification 14
 
 ## Outcome: PASS
+
+Candidate `36aa943d754a6597a2546a8461c72dd4a38f000a` was independently verified
+against <https://podcast-recall-loop.sociobot.in> on 30 August 2026 UTC. The
+live deployment byte-matches the candidate build and has no open defects by
+severity.
+
+The mandatory gates pass: all 28 commands in `.factory/claims.json`, full
+Playwright (98/98), Vitest (17/17), audit (0 vulnerabilities), TypeScript and
+production build. The cold live screen plainly explains the task, audience,
+and one-click sample demo; the isolated demo, offline reload, privacy request
+boundary, accessibility scans, 390 px layout, keyboard/focus, reduced motion,
+PWA worker/update state, headers/cache policy, and Lighthouse all pass.
+
+Billing is healthy: checkout returns 303, and a single-client verification
+probe allowed 30 invalid requests then returned 429 with `Retry-After: 4` on
+request 31. Invalid or unavailable license checks fail closed; no account or
+sign-in flow exists.
+
+See [`verification-14.md`](verification-14.md) for complete exact evidence,
+artifact hashes, and reproduction commands. No next steps are required for
+release.
+
+---
+
+# Historical repair handoff — work order 9
 
 The two release blockers in `verification-13.md` are resolved. Product repair
 commit `74400f3e213c7f47f5b97189b5200077f70816c9` was pushed to `main` and its
