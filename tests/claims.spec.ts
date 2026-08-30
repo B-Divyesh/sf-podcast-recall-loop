@@ -17,75 +17,80 @@ test('@claim:offline-reload reviews work offline after the first visit', async (
   }
 });
 
-test('@claim:demo-isolation demo never reads or writes real notes or licenses', async ({ page }) => {
-  await page.goto('/app');
-  await saveClip(page, 'A real-library question?');
-  const external: string[] = [];
-  page.on('request', request => {
-    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url());
-  });
-  const before = await page.evaluate(async () => {
-    localStorage.setItem('sb_license:podcast-recall-loop', 'real-license');
-    localStorage.setItem('sb_license:podcast-recall-loop:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
-    const database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('podcast-recall-loop'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+test('@claim:demo-isolation demo never reads or writes real notes or licenses', async ({ browser }) => {
+  // This deliberately does not use Playwright's shared page fixture. The
+  // checkout exit resets IndexedDB before assigning an external URL, which
+  // used to race the next test action in a full two-worker run.
+  const context = await browser.newContext({ baseURL: APP_ORIGIN });
+  const page = await context.newPage();
+  try {
+    await page.goto('/app');
+    await saveClip(page, 'A real-library question?');
+    await waitForWorkspace(page, REAL_DATABASE, state => state.clips.some(clip => clip.prompt === 'A real-library question?'));
+
+    const external: string[] = [];
+    page.on('request', request => {
+      if (new URL(request.url()).origin !== APP_ORIGIN) external.push(request.url());
     });
-    const value = await new Promise<unknown>((resolve, reject) => {
-      const request = database.transaction('workspace').objectStore('workspace').get('state'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
-    });
-    database.close();
-    return { storage: Object.fromEntries(Object.entries(localStorage)), value };
-  });
-  await page.goto('/?demo=1&license=demo-url-token');
-  await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
-  await saveClip(page, 'A demo-only question?');
-  await expect(page.getByText('6 saved clips.')).toBeVisible();
-  const after = await page.evaluate(async () => {
-    const database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('podcast-recall-loop'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
-    });
-    const value = await new Promise<unknown>((resolve, reject) => {
-      const request = database.transaction('workspace').objectStore('workspace').get('state'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
-    });
-    database.close();
-    return { storage: Object.fromEntries(Object.entries(localStorage)), value };
-  });
-  expect(after).toEqual(before);
-  expect(external).toEqual([]);
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Delete question: A demo-only question?' }).click();
-  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
-  await page.getByRole('button', { name: 'I remembered' }).click();
-  await expect(page.getByLabel('2 questions due')).toBeVisible();
-  const restoreExit = page.getByRole('link', { name: 'Restore a license' });
-  await expect(restoreExit).toHaveAttribute('href', '/#restore-license');
-  await restoreExit.click();
-  await expect(page).toHaveURL('/#restore-license');
-  await expect(page.getByLabel('License token')).toBeVisible();
-  await expect(page.getByLabel('License token')).toBeFocused();
-  await page.goto('/demo');
-  await expect(page.getByText('5 saved clips.')).toBeVisible();
-  await expect(page.getByLabel('3 questions due')).toBeVisible();
-  await expect(page.getByText('A demo-only question?')).toHaveCount(0);
-  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout', route => route.fulfill({
-    contentType: 'text/html',
-    body: '<title>Recorded checkout</title><main><h1>Recorded checkout</h1></main>'
-  }));
-  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
-  await page.getByRole('button', { name: 'I remembered' }).click();
-  await page.getByRole('link', { name: 'Buy unlimited — $9 once' }).click();
-  await expect(page).toHaveTitle('Recorded checkout');
-  await page.goto('/?demo=1');
-  await expect(page.getByText('5 saved clips.')).toBeVisible();
-  await expect(page.getByLabel('3 questions due')).toBeVisible();
-  await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
-  await page.getByRole('button', { name: 'I remembered' }).click();
-  await page.getByRole('button', { name: 'Start for real' }).click();
-  await expect(page.getByText('A real-library question?', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('A demo-only question?')).toHaveCount(0);
-  await page.goto('/demo');
-  await expect(page.getByText('5 saved clips.')).toBeVisible();
-  await expect(page.getByLabel('3 questions due')).toBeVisible();
+    const before = await snapshotRealWorkspace(page);
+
+    await page.goto('/?demo=1&license=demo-url-token');
+    await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
+    await waitForWorkspace(page, DEMO_DATABASE, state => state.clips.length === 5);
+    await saveClip(page, 'A demo-only question?');
+    await expect(page.getByText('6 saved clips.')).toBeVisible();
+    await waitForWorkspace(page, DEMO_DATABASE, state => state.clips.some(clip => clip.prompt === 'A demo-only question?'));
+    await expect.poll(() => snapshotRealWorkspace(page)).toEqual(before);
+    expect(external).toEqual([]);
+
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Delete question: A demo-only question?' }).click();
+    await waitForWorkspace(page, DEMO_DATABASE, state => !state.clips.some(clip => clip.prompt === 'A demo-only question?'));
+    await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+    await page.getByRole('button', { name: 'I remembered' }).click();
+    await expect(page.getByLabel('2 questions due')).toBeVisible();
+
+    const restoreExit = page.getByRole('link', { name: 'Restore a license' });
+    await expect(restoreExit).toHaveAttribute('href', '/#restore-license');
+    await Promise.all([page.waitForURL(`${APP_ORIGIN}/#restore-license`), restoreExit.click()]);
+    await expect.poll(() => databaseExists(page, DEMO_DATABASE)).toBe(false);
+    await expect(page.getByLabel('License token')).toBeVisible();
+    await expect(page.getByLabel('License token')).toBeFocused();
+
+    await page.goto('/demo');
+    await expectSeededDemo(page);
+    await context.route(CHECKOUT_URL, route => route.fulfill({
+      contentType: 'text/html',
+      body: '<title>Recorded checkout</title><main><h1>Recorded checkout</h1></main>'
+    }));
+    await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+    await page.getByRole('button', { name: 'I remembered' }).click();
+    // Register the URL waiter before the actual demo checkout anchor. This
+    // is the exact transition that intermittently stalled in verification 12.
+    await Promise.all([
+      page.waitForURL(CHECKOUT_URL),
+      page.getByRole('link', { name: 'Buy unlimited — $9 once' }).click()
+    ]);
+    await expect(page).toHaveTitle('Recorded checkout');
+
+    await page.goto('/?demo=1');
+    await expectSeededDemo(page);
+    await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
+    await page.getByRole('button', { name: 'I remembered' }).click();
+    await Promise.all([
+      page.waitForURL(`${APP_ORIGIN}/app`),
+      page.getByRole('button', { name: 'Start for real' }).click()
+    ]);
+    await expect.poll(() => databaseExists(page, DEMO_DATABASE)).toBe(false);
+    await expect(page.getByText('A real-library question?', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('A demo-only question?')).toHaveCount(0);
+    await expect.poll(() => snapshotRealWorkspace(page)).toEqual(before);
+
+    await page.goto('/demo');
+    await expectSeededDemo(page);
+  } finally {
+    await context.close();
+  }
 });
 
 test('@claim:rss-lookup an RSS feed fills podcast and episode fields', async ({ page }) => {
@@ -418,6 +423,74 @@ test('@claim:license-storage licensing stores only the token and daily verificat
   await page.goto('/privacy');
   await expect(page.getByText('This app stores your license token and its daily verification result in this browser.')).toBeVisible();
 });
+
+const APP_ORIGIN = 'http://127.0.0.1:4173';
+const REAL_DATABASE = 'podcast-recall-loop';
+const DEMO_DATABASE = 'podcast-recall-loop-demo';
+const CHECKOUT_URL = 'https://api.sociobot.in/api/v1/products/podcast-recall-loop/checkout';
+
+type StoredWorkspace = {
+  clips: Array<{ prompt: string }>;
+};
+
+async function databaseExists(page: import('@playwright/test').Page, databaseName: string): Promise<boolean> {
+  return page.evaluate(async name => (await indexedDB.databases()).some(database => database.name === name), databaseName);
+}
+
+/**
+ * Reads only a database which the app has already created. Opening an absent
+ * database would itself create an empty database and hide a failed demo reset.
+ */
+async function readWorkspace(page: import('@playwright/test').Page, databaseName: string): Promise<StoredWorkspace | undefined> {
+  return page.evaluate(async name => {
+    if (!(await indexedDB.databases()).some(database => database.name === name)) return undefined;
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(name);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      if (!database.objectStoreNames.contains('workspace')) return undefined;
+      return await new Promise<StoredWorkspace | undefined>((resolve, reject) => {
+        const request = database.transaction('workspace').objectStore('workspace').get('state');
+        request.onsuccess = () => resolve(request.result as StoredWorkspace | undefined);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      database.close();
+    }
+  }, databaseName);
+}
+
+async function waitForWorkspace(
+  page: import('@playwright/test').Page,
+  databaseName: string,
+  predicate: (state: StoredWorkspace) => boolean
+): Promise<void> {
+  await expect.poll(async () => {
+    const state = await readWorkspace(page, databaseName);
+    return Boolean(state && predicate(state));
+  }, { message: `${databaseName} did not finish writing its workspace state` }).toBe(true);
+}
+
+async function snapshotRealWorkspace(page: import('@playwright/test').Page): Promise<{ storage: Record<string, string>; value: StoredWorkspace | undefined }> {
+  await waitForWorkspace(page, REAL_DATABASE, state => state.clips.some(clip => clip.prompt === 'A real-library question?'));
+  return {
+    storage: await page.evaluate(() => {
+      localStorage.setItem('sb_license:podcast-recall-loop', 'real-license');
+      localStorage.setItem('sb_license:podcast-recall-loop:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
+      return Object.fromEntries(Object.entries(localStorage));
+    }),
+    value: await readWorkspace(page, REAL_DATABASE)
+  };
+}
+
+async function expectSeededDemo(page: import('@playwright/test').Page): Promise<void> {
+  await expect(page.getByText('5 saved clips.')).toBeVisible();
+  await expect(page.getByLabel('3 questions due')).toBeVisible();
+  await expect(page.getByText('A demo-only question?')).toHaveCount(0);
+  await waitForWorkspace(page, DEMO_DATABASE, state => state.clips.length === 5);
+}
 
 async function fillClip(page: import('@playwright/test').Page, question: string): Promise<void> {
   await page.getByLabel('Podcast name').fill('The Useful Hour');
