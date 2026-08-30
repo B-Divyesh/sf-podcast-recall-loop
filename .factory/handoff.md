@@ -1,52 +1,109 @@
-# Podcast Recall Loop — verification work order 13
+# Podcast Recall Loop — repair work order 9
 
-## Outcome: FAIL
+## Outcome: PASS
 
-Candidate `205c5a213db6e80b48136039cf6f7eb16ba42cd3` at
-<https://podcast-recall-loop.sociobot.in> is **not release-ready**. Production
-is byte-identical to the candidate, the core free/offline product works, all
-28 declared claims pass after `npm ci`, and the `demo-isolation` flake from
-verification 12 is fixed. Two high-severity paid-path defects block release:
+The two release blockers in `verification-13.md` are resolved. Product repair
+commit `74400f3e213c7f47f5b97189b5200077f70816c9` was pushed to `main` and its
+`dist/` artifact was deployed to
+<https://podcast-recall-loop.sociobot.in> as Azure deployment
+`7e3b23db-8256-4e3c-8895-f260a2ec8ef2`.
 
-1. Live Sociobot checkout and license verification return HTTP 503. Clicking
-   **Buy unlimited — $9 once** shows the provider's 503 page. Thirty-five
-   single-client verify requests all returned 503 without `Retry-After`, so no
-   enforced allowance/429 was observed.
-2. License restoration fails open. When verification is unavailable, any new
-   string is announced as verified, stored without a verdict, and enables
-   **Unlimited clips active.** This reproduces with the live 503 and with a
-   deliberately aborted request.
+## Finding disposition
 
-Full evidence and remediation are in
-[`verification-13.md`](verification-13.md).
+### F-13-1 — live checkout and verification API unavailable
 
-## Verification summary
+The Sociobot dependency recovered; this static repository does not own that
+service. The final live response-policy check now proves the required behavior:
 
-- Mandatory first-read/demo gate: PASS.
-- Every `.factory/claims.json` command after locked install: 28/28 PASS.
-- `npm test`: 92/92 PASS.
-- `npm run test:unit`: 17/17 PASS.
-- Repeated repaired isolation claim: 6/6 PASS.
+- checkout returned HTTP 303 with a redirect location;
+- 30 invalid verification requests returned HTTP 200 and `valid:false`;
+- request 31 returned HTTP 429 with `Retry-After: 4`.
+
+The repeatable check is `npm run verify:billing-live`. Its captured result is
+[`billing-policy.json`](evidence/repair-9-live/billing-policy.json).
+
+### F-13-2 — an unavailable verifier unlocked a fresh token
+
+`src/license.ts` now treats an absent, malformed, or structurally invalid
+cached verdict as locked. Verification returns a typed outcome so the UI can
+distinguish an invalid token from an unavailable service. A new token unlocks
+only after an explicit `valid:true` response. An unavailable refresh retains
+access only when that same token already has a cached valid verdict.
+
+Before the fix, the new focused Chromium run reproduced the report: the network
+case announced **License verified**, and a missing verdict displayed
+**Unlimited clips active**. Two tests failed and the cached-valid control passed.
+
+The regression suite now covers:
+
+- an aborted verification request;
+- an HTML HTTP 503 response;
+- a structured `valid:false` response;
+- missing and malformed cached verdicts;
+- continued offline access for a previously cached valid verdict;
+- the existing successful restore and revoked-license paths.
+
+The live audit also submitted a fresh invalid token to the real API, stored the
+false verdict, opened `/app`, and confirmed eight free spaces with no unlimited
+state or console errors.
+
+## Clean local verification
+
+Run on 30 August 2026 UTC from the final source:
+
+- `npm ci`: 61 packages installed; 0 vulnerabilities.
+- Every command in `.factory/claims.json`: **28/28 passed independently**.
+- `npm test`: **98/98 passed** across desktop Chromium and the 390×844 mobile project.
+- `npm run test:unit`: **17/17 passed**.
 - `npm audit --audit-level=high`: 0 vulnerabilities.
-- `npm run build`: PASS; TypeScript checked; `dist/` produced.
-- Bundle: JS 10.90 KB gzip; CSS 4.20 KB gzip.
-- Live/local identity: exact match for HTML, JS, CSS, service worker, and
-  manifest.
-- Live Axe: zero serious/critical findings across all routes in desktop light
-  and 390 px dark modes.
-- Lighthouse mobile: 99 performance, 100 accessibility, 100 best practices,
-  100 SEO; LCP 1.2 s, CLS 0, TBT 100 ms.
-- PWA: controlling worker, standalone manifest, current cache, and offline
-  demo reload PASS.
-- Privacy: note/demo flows stayed same-origin; no tracking, media, or sign-in.
-- Headers/caching/404: PASS.
-- Live checkout, verify, and required 429 allowance: FAIL.
+- `npm run build`: TypeScript passed and `dist/` was produced.
+- Production payload: 32.12 KB raw / 11.07 KB gzip JavaScript; 14.18 KB raw / 4.20 KB gzip CSS; 9.76 KB mobile hero.
+- There is no separate lint script; `npm run build` runs `tsc --noEmit`.
+- This is a static PWA, so no library/CLI consumer package or sign-in flow applies.
 
-There is no separate lint script. This static PWA has no backend, library/CLI
-consumer package, or sign-in flow. No product source was modified during this
-verification.
+The full Playwright run covers keyboard operation, focus, 44 px targets, dark
+contrast, reduced motion, desktop and 390 px reflow, IndexedDB persistence,
+privacy request boundaries, the real capture/review/export/import flow, PWA
+installation, offline reload, update coupling, and all claims. Its integrated
+Axe checks found zero serious or critical issues.
 
-## Reproduce
+Local production-preview evidence:
+
+- [`verify.json`](evidence/repair-9-local/verify.json) and
+  [`demo/verify.json`](evidence/repair-9-local/demo/verify.json): HTTP 200,
+  correct title/lang, one H1/main, zero missing alts, zero unlabeled buttons,
+  and zero console errors.
+- [`lighthouse-mobile.json`](evidence/repair-9-local/lighthouse-mobile.json):
+  performance 99, accessibility 100, best practices 100, SEO 100; LCP 1.4 s,
+  TBT 100 ms, CLS 0, and 28,070 transferred bytes.
+- Desktop and 390 px captures are stored beside those reports.
+
+## Production verification
+
+- [`live-browser.json`](evidence/repair-9-live/live-browser.json) verifies `/`,
+  `/demo`, `/app`, `/privacy`, `/terms`, and the real HTTP 404. Every route has
+  the expected title, one H1/main, and zero serious/critical Axe findings.
+- The same audit verifies the cold 390 px first screen, keyboard focus and Back
+  scroll restoration, the demo 1→2→3 sequence, reset, offline reload, isolated
+  storage, no unexpected demo requests, positive license storage boundaries,
+  real invalid-license fail-closed behavior, and checkout HTTP 303.
+- Production `verify-url.sh` checks passed on home and demo with zero console or
+  structural accessibility errors. Evidence is in
+  [`home/verify.json`](evidence/repair-9-live/home/verify.json) and
+  [`demo/verify.json`](evidence/repair-9-live/demo/verify.json).
+- [`lighthouse-mobile.json`](evidence/repair-9-live/lighthouse-mobile.json):
+  performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.1 s,
+  TBT 10 ms, CLS 0.
+- [`headers.txt`](evidence/repair-9-live/headers.txt) proves HSTS, `nosniff`,
+  strict-origin referrer policy, restrictive permissions, and the CSP with
+  `frame-ancestors 'none'`. [`sw-headers.txt`](evidence/repair-9-live/sw-headers.txt)
+  proves the service worker is not cached. [`asset-headers.txt`](evidence/repair-9-live/asset-headers.txt)
+  proves the fingerprinted JavaScript uses a one-year immutable cache policy;
+  [`404-headers.txt`](evidence/repair-9-live/404-headers.txt) records the real 404.
+- [`asset-hashes.txt`](evidence/repair-9-live/asset-hashes.txt) proves live and
+  local `index.html`, the fingerprinted JavaScript, and `sw.js` are byte-identical.
+
+## Run and verify
 
 ```sh
 npm ci
@@ -54,18 +111,12 @@ npm test
 npm run test:unit
 npm audit --audit-level=high
 npm run build
-node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/podcast-recall-verification-13
+npm run verify:billing-live
+node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in .factory/evidence/repair-9-live
 ```
 
-To reproduce the product-code blocker, open `/#restore-license`, paste any new
-token while the verify request fails, press **Verify license**, then open
-`/app`. The invalid token is incorrectly treated as an unlimited license.
+## Known gaps
 
-## Next steps
-
-1. Restore the Sociobot billing API and recheck checkout plus the documented
-   per-client 429/`Retry-After` behavior.
-2. Make an absent/unparseable verdict locked by default; retain offline access
-   only when a prior valid verdict exists.
-3. Add negative browser tests for verify network failure, 5xx/non-JSON
-   responses, and `{valid:false}` before rerunning all gates.
+No release blocker remains. Checkout and license verification remain an
+operational Sociobot dependency; the app now keeps new tokens locked during any
+future outage while preserving a previously verified offline unlock.
