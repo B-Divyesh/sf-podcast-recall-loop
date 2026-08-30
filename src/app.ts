@@ -84,7 +84,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.9</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.10</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -269,8 +269,13 @@ function bindForms(): void {
     const form = event.currentTarget as HTMLFormElement;
     const status = form.querySelector<HTMLParagraphElement>('#license-status')!;
     status.textContent = 'Checking the license…';
-    const valid = await restoreLicense(String(new FormData(form).get('token') || ''));
-    status.textContent = valid ? 'License verified. Unlimited clips are active.' : 'That license is not active. Check the token and try again.';
+    const result = await restoreLicense(String(new FormData(form).get('token') || ''));
+    licenseInactive = result.outcome === 'invalid';
+    status.textContent = result.unlocked
+      ? 'License verified. Unlimited clips are active.'
+      : result.outcome === 'unavailable'
+        ? 'We could not check this license. Try again in a moment. The free limit still applies.'
+        : 'That license is not active. Check the token and try again.';
   });
 
   document.querySelector<HTMLInputElement>('#import-file')?.addEventListener('change', async event => {
@@ -364,8 +369,9 @@ const startsInDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URL
 if (!startsInDemo) acceptLicenseFromUrl();
 const initiallyUnlocked = !startsInDemo && cachedUnlocked();
 await render(false);
-if (!startsInDemo) void verifyLicense().then(valid => {
-  licenseInactive = initiallyUnlocked && !valid;
-  if (valid !== initiallyUnlocked && location.pathname === '/app') render(false);
+if (!startsInDemo) void verifyLicense().then(result => {
+  const wasInactive = licenseInactive;
+  licenseInactive = result.outcome === 'invalid';
+  if ((result.unlocked !== initiallyUnlocked || licenseInactive !== wasInactive) && location.pathname === '/app') render(false);
 });
 void registerServiceWorker();

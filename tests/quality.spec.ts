@@ -236,6 +236,89 @@ test('@claim:license-restore a pasted license is verified with an announced reco
   expect(await page.evaluate(() => localStorage.getItem('sb_license:podcast-recall-loop'))).toBe('restored-license');
 });
 
+test('new licenses stay locked after network, server, and invalid-token failures', async ({ page }) => {
+  const cases = [
+    {
+      token: 'network-failure-license',
+      respond: (route: import('@playwright/test').Route) => route.abort('failed'),
+      message: 'We could not check this license. Try again in a moment. The free limit still applies.',
+      storedVerdict: null
+    },
+    {
+      token: 'server-failure-license',
+      respond: (route: import('@playwright/test').Route) => route.fulfill({
+        status: 503,
+        contentType: 'text/html',
+        body: '<h1>Service unavailable</h1>'
+      }),
+      message: 'We could not check this license. Try again in a moment. The free limit still applies.',
+      storedVerdict: null
+    },
+    {
+      token: 'invalid-license',
+      respond: (route: import('@playwright/test').Route) => route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ valid: false, reason: 'invalid', expires_at: null })
+      }),
+      message: 'That license is not active. Check the token and try again.',
+      storedVerdict: false
+    }
+  ] as const;
+
+  await page.route(/\/products\/podcast-recall-loop\/verify\?license=/, route => {
+    const token = new URL(route.request().url()).searchParams.get('license');
+    const scenario = cases.find(item => item.token === token);
+    return scenario ? scenario.respond(route) : route.abort('failed');
+  });
+
+  for (const scenario of cases) {
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('/#restore-license');
+    await page.getByLabel('License token').fill(scenario.token);
+    await page.getByRole('button', { name: 'Verify license' }).click();
+    await expect(page.locator('#license-status')).toHaveText(scenario.message);
+
+    const storage = await page.evaluate(() => ({
+      token: localStorage.getItem('sb_license:podcast-recall-loop'),
+      verdict: localStorage.getItem('sb_license:podcast-recall-loop:verdict')
+    }));
+    expect(storage.token).toBe(scenario.token);
+    if (scenario.storedVerdict === null) expect(storage.verdict).toBeNull();
+    else expect(JSON.parse(storage.verdict!)).toMatchObject({ valid: scenario.storedVerdict });
+
+    await page.goto('/app');
+    await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
+    await expect(page.getByText('8 of 8 free clip spaces remain.')).toBeVisible();
+  }
+});
+
+test('missing and malformed cached verdicts never unlock a stored token', async ({ page }) => {
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=unverified-license', route => route.abort('failed'));
+  for (const verdict of [null, '{not-json']) {
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.evaluate(cachedVerdict => {
+      localStorage.clear();
+      localStorage.setItem('sb_license:podcast-recall-loop', 'unverified-license');
+      if (cachedVerdict !== null) localStorage.setItem('sb_license:podcast-recall-loop:verdict', cachedVerdict);
+    }, verdict);
+    await page.goto('/app');
+    await expect(page.getByText('Unlimited clips active.')).toHaveCount(0);
+    await expect(page.getByText('8 of 8 free clip spaces remain.')).toBeVisible();
+  }
+});
+
+test('a cached valid verdict remains unlocked when its daily refresh is unavailable', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('sb_license:podcast-recall-loop', 'cached-valid-license');
+    localStorage.setItem('sb_license:podcast-recall-loop:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
+  });
+  await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=cached-valid-license', route => route.abort('failed'));
+  await page.goto('/app');
+  await expect(page.getByText('Unlimited clips active.')).toBeVisible();
+  await expect(page.getByText('The free library holds eight clips.')).toHaveCount(0);
+});
+
 test('a revoked returned license quietly restores the free limit', async ({ page }) => {
   await page.route('https://api.sociobot.in/api/v1/products/podcast-recall-loop/verify?license=revoked-license', route => route.fulfill({
     contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'revoked', expires_at: null })
@@ -264,7 +347,7 @@ test('every route shows the build version without referring to private design no
   for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
     await page.goto(route);
     const footer = page.locator('footer.site-footer');
-    await expect(footer.getByText('Version 1.0.9', { exact: true })).toBeVisible();
+    await expect(footer.getByText('Version 1.0.10', { exact: true })).toBeVisible();
     await expect(footer).not.toContainText('design notes');
   }
 });

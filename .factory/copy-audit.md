@@ -70,7 +70,9 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Three podcast ideas, recalled daily. | 5 | Pass |
 | Privacy / Terms | 1 each | Pass; destinations |
 | Built by Param Factory | 4 | Pass |
-| Version 1.0.9 | 2 | Pass; build id without an inaccessible internal reference |
+| We could not check this license. Try again in a moment. The free limit still applies. | 16 | Pass; recovery explains the failure and next step |
+| That license is not active. Check the token and try again. | 11 | Pass; invalid-token recovery |
+| Version 1.0.10 | 2 | Pass; build id without an inaccessible internal reference |
 
 ## Metadata and catalog
 

@@ -58,7 +58,7 @@ try {
   const factsBox = await mobile.locator('.plain-facts').boundingBox();
   assert(Boolean(factsBox) && factsBox.y + factsBox.height <= 844, 'First-screen facts fall below the 390x844 viewport.');
   assert(await mobile.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'Home overflows at 390px.');
-  await mobile.locator('footer.site-footer').getByText('Version 1.0.9', { exact: true }).waitFor();
+  await mobile.locator('footer.site-footer').getByText('Version 1.0.10', { exact: true }).waitFor();
   assert(!(await mobile.locator('footer.site-footer').innerText()).includes('design notes'), 'Footer still refers to design notes.');
   await mobile.screenshot({ path: `${evidenceDir}/live-home-mobile.png`, fullPage: true });
 
@@ -176,6 +176,29 @@ try {
   report.findings.licenseNetworkWording = { automaticDailyScope: true, explicitVerificationRequests };
   await licenseContext.close();
 
+  const invalidLicenseContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const invalidLicensePage = await invalidLicenseContext.newPage();
+  const invalidLicenseErrors = [];
+  invalidLicensePage.on('pageerror', error => invalidLicenseErrors.push(String(error)));
+  invalidLicensePage.on('console', message => { if (message.type() === 'error') invalidLicenseErrors.push(message.text()); });
+  const invalidToken = `live-invalid-${Date.now()}`;
+  await invalidLicensePage.goto(`${baseUrl}/#restore-license`, { waitUntil: 'networkidle' });
+  await invalidLicensePage.getByLabel('License token').fill(invalidToken);
+  await invalidLicensePage.getByRole('button', { name: 'Verify license' }).click();
+  await invalidLicensePage.getByText('That license is not active. Check the token and try again.').waitFor();
+  const invalidStorage = await invalidLicensePage.evaluate(() => ({
+    token: localStorage.getItem('sb_license:podcast-recall-loop'),
+    verdict: localStorage.getItem('sb_license:podcast-recall-loop:verdict')
+  }));
+  assert(invalidStorage.token === invalidToken, 'The rejected license token was not stored for correction.');
+  assert(JSON.parse(invalidStorage.verdict || '{}').valid === false, 'The rejected license did not store a false verdict.');
+  await invalidLicensePage.goto(`${baseUrl}/app`, { waitUntil: 'networkidle' });
+  assert(await invalidLicensePage.getByText('Unlimited clips active.').count() === 0, 'A rejected license unlocked unlimited clips.');
+  await invalidLicensePage.getByText('8 of 8 free clip spaces remain.').waitFor();
+  assert(invalidLicenseErrors.length === 0, `Invalid license flow logged errors: ${invalidLicenseErrors.join(', ')}`);
+  report.findings.invalidLicenseFailClosed = { liveApiVerdict: false, unlimited: false, freeSpaces: 8, consoleErrors: 0 };
+  await invalidLicenseContext.close();
+
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const desktop = await desktopContext.newPage();
   const routeExpectations = {
@@ -203,7 +226,7 @@ try {
     const footer = desktop.locator('footer.site-footer');
     await footer.getByRole('link', { name: 'Privacy' }).waitFor();
     await footer.getByRole('link', { name: 'Terms' }).waitFor();
-    await footer.getByText('Version 1.0.9', { exact: true }).waitFor();
+    await footer.getByText('Version 1.0.10', { exact: true }).waitFor();
     assert(!(await footer.innerText()).includes('design notes'), `${route} retains the inaccessible footer reference.`);
     const axe = await new AxeBuilder({ page: desktop }).analyze();
     const serious = axe.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''));

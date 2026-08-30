@@ -5,6 +5,26 @@ const VERDICT_KEY = `${KEY}:verdict`;
 
 interface Verdict { valid: boolean; checkedAt: number }
 
+export interface LicenseCheck {
+  unlocked: boolean;
+  outcome: 'valid' | 'invalid' | 'unavailable' | 'missing';
+}
+
+function cachedVerdict(): Verdict | null {
+  try {
+    const value = JSON.parse(localStorage.getItem(VERDICT_KEY) || '') as unknown;
+    if (
+      typeof value !== 'object'
+      || value === null
+      || typeof (value as Partial<Verdict>).valid !== 'boolean'
+      || !Number.isFinite((value as Partial<Verdict>).checkedAt)
+    ) return null;
+    return value as Verdict;
+  } catch {
+    return null;
+  }
+}
+
 export function buyUrl(): string {
   return `${API}/products/${SLUG}/checkout`;
 }
@@ -20,37 +40,31 @@ export function acceptLicenseFromUrl(): void {
 }
 
 export function cachedUnlocked(): boolean {
-  const token = localStorage.getItem(KEY);
-  if (!token) return false;
-  try {
-    const verdict = JSON.parse(localStorage.getItem(VERDICT_KEY) || '') as Verdict;
-    return verdict.valid;
-  } catch {
-    return true;
-  }
+  return Boolean(localStorage.getItem(KEY)) && cachedVerdict()?.valid === true;
 }
 
-export async function verifyLicense(force = false): Promise<boolean> {
+export async function verifyLicense(force = false): Promise<LicenseCheck> {
   const token = localStorage.getItem(KEY);
-  if (!token) return false;
-  try {
-    const cached = JSON.parse(localStorage.getItem(VERDICT_KEY) || '') as Verdict;
-    if (!force && Date.now() - cached.checkedAt < 86_400_000) return cached.valid;
-  } catch { /* Verify now. */ }
+  if (!token) return { unlocked: false, outcome: 'missing' };
+  const cached = cachedVerdict();
+  if (!force && cached && Date.now() - cached.checkedAt < 86_400_000) {
+    return { unlocked: cached.valid, outcome: cached.valid ? 'valid' : 'invalid' };
+  }
   try {
     const response = await fetch(`${API}/products/${SLUG}/verify?license=${encodeURIComponent(token)}`);
-    const result = await response.json() as { valid: boolean };
-    if (!response.ok || typeof result.valid !== 'boolean') throw new Error('verification unavailable');
+    if (!response.ok) throw new Error('verification unavailable');
+    const result = await response.json() as { valid?: unknown };
+    if (typeof result.valid !== 'boolean') throw new Error('verification unavailable');
     localStorage.setItem(VERDICT_KEY, JSON.stringify({ valid: result.valid, checkedAt: Date.now() }));
-    return result.valid;
+    return { unlocked: result.valid, outcome: result.valid ? 'valid' : 'invalid' };
   } catch {
-    return cachedUnlocked();
+    return { unlocked: cached?.valid === true, outcome: 'unavailable' };
   }
 }
 
-export async function restoreLicense(token: string): Promise<boolean> {
+export async function restoreLicense(token: string): Promise<LicenseCheck> {
   const normalized = token.trim();
-  if (!normalized) return false;
+  if (!normalized) return { unlocked: false, outcome: 'missing' };
   localStorage.setItem(KEY, normalized);
   localStorage.removeItem(VERDICT_KEY);
   return verifyLicense(true);
