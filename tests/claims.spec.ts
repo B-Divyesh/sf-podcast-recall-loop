@@ -1,14 +1,20 @@
 import { expect, test } from '@playwright/test';
 
-test('@claim:offline-reload reviews work offline after the first visit', async ({ page, context }) => {
-  await page.goto('/demo');
-  await page.evaluate(() => navigator.serviceWorker.ready);
-  await page.reload();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Remember three ideas today');
-  await context.setOffline(true);
-  await page.reload();
-  await expect(page.getByText('Offline. Your saved clips and review queue still work.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Reveal my takeaway' })).toBeVisible();
+test('@claim:offline-reload reviews work offline after the first visit', async ({ browser }) => {
+  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:4173' });
+  const page = await context.newPage();
+  try {
+    await page.goto('/demo');
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Remember three ideas today');
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByText('Offline. Your saved clips and review queue still work.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Reveal my takeaway' })).toBeVisible();
+  } finally {
+    await context.close();
+  }
 });
 
 test('@claim:demo-isolation demo never reads or writes real notes or licenses', async ({ page }) => {
@@ -361,7 +367,7 @@ test('@claim:review-results both review results schedule the next review from th
   await expect(page.getByLabel('2 questions due')).toBeVisible();
   await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
   await page.getByRole('button', { name: 'I remembered' }).click();
-  await expect(page.getByLabel('1 questions due')).toBeVisible();
+  await expect(page.getByLabel('1 question due')).toBeVisible();
 });
 
 test('@claim:calendar-reminder downloads a local recurring daily reminder for the recall queue', async ({ page }) => {

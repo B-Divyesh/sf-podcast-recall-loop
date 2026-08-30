@@ -75,6 +75,15 @@ describe('release regressions', () => {
     expect(readFileSync('README.md', 'utf8')).toContain('Requires Node.js 20.19+ or 22.12+.');
   });
 
+  test('a direct production build bootstraps its locked tools when needed', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+    const bootstrap = readFileSync('scripts/ensure-build-tools.mjs', 'utf8');
+    expect(pkg.scripts.prebuild).toBe('node scripts/ensure-build-tools.mjs');
+    expect(bootstrap).toContain("spawnSync(npm, ['ci', '--no-audit', '--no-fund']");
+    expect(bootstrap).toContain('node_modules/typescript/bin/tsc');
+    expect(bootstrap).toContain('node_modules/vite/bin/vite.js');
+  });
+
   test('every registered claim has exactly one test tag and no test tag is unregistered', () => {
     const claims = JSON.parse(readFileSync('.factory/claims.json', 'utf8')) as Array<{ id: string }>;
     const sources = [

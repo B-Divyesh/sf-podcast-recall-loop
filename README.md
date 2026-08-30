@@ -1,6 +1,6 @@
 # Podcast Recall Loop
 
-Turn podcast moments into three daily recall questions.
+Turn saved podcast moments into questions, then recall three ideas each day.
 
 Podcast Recall Loop is for self-learners who want recall without a larger note system. Add a podcast feed, choose an episode, mark a timestamp, and write one question. The daily queue presents no more than three due questions.
 
@@ -27,7 +27,7 @@ Open `http://localhost:4173/?demo=1` after starting the app. It contains five sa
 Requires Node.js 20.19+ or 22.12+.
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 

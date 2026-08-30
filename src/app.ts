@@ -84,7 +84,7 @@ function shell(content: string): string {
     </header>
     ${!online ? '<div class="offline-note" role="status">Offline. Your saved clips and review queue still work.</div>' : ''}
     <main id="main" tabindex="-1">${content}</main>
-    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.8</p></footer>
+    <footer class="site-footer"><p>Three podcast ideas, recalled daily.</p><nav aria-label="Footer"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in/" ${demo ? '' : 'target="_blank" rel="noreferrer"'}>Built by Param Factory ${demo ? '' : '<span class="sr-only">(opens in a new tab)</span>'}</a></nav><p>Version 1.0.9</p></footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>`;
 }
 
@@ -93,8 +93,8 @@ function landing(): string {
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow">Podcast recall for long listens</p>
-        <h1 id="hero-title" tabindex="-1">Remember what your podcasts taught you</h1>
-        <p class="lede">For curious listeners who save good moments but forget the ideas.</p>
+        <h1 id="hero-title" tabindex="-1">Turn podcast moments into recall questions</h1>
+        <p class="lede">For podcast listeners who save useful moments, then forget what they learned.</p>
         <div class="hero-actions"><a class="button primary" href="/?demo=1" data-link>Try it with sample data</a><span>Opens five sample clips from fictional shows. No setup.</span></div>
         <a class="quiet-link" href="/app" data-link>Add a podcast feed →</a>
         <ul class="plain-facts" aria-label="Product facts"><li>Notes stay in this browser.</li><li>Reviews work offline after your first visit.</li><li>The free library holds eight clips.</li></ul>
@@ -129,7 +129,8 @@ function libraryMarkup(): string {
 
 function appPage(): string {
   const unlocked = !demo && cachedUnlocked();
-  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${todayQueue.clips.length} questions due"><strong>${todayQueue.clips.length}</strong><span>due</span></div></div>
+  const dueLabel = `${todayQueue.clips.length} ${todayQueue.clips.length === 1 ? 'question' : 'questions'} due`;
+  return shell(`<div class="app-intro"><div><p class="eyebrow">${demo ? 'Sample recall queue' : 'Your recall queue'}</p><h1 tabindex="-1">Remember three ideas today</h1><p>${state.clips.length ? `${state.clips.length} saved clip${state.clips.length === 1 ? '' : 's'}. Answer from memory before revealing your note.` : 'Start with one moment worth remembering.'}</p>${!demo ? '<button class="calendar-reminder" data-action="export-reminder">Add a daily calendar reminder</button>' : ''}</div><div class="count-medallion" aria-label="${dueLabel}"><strong>${todayQueue.clips.length}</strong><span>due</span></div></div>
     ${reviewMarkup()}
     <section id="capture" class="capture" aria-labelledby="capture-title"><div class="section-heading"><div><p class="eyebrow">Capture a moment</p><h2 id="capture-title">Write the question only you need</h2></div><p>${unlocked ? 'Unlimited clips active.' : `${Math.max(0, 8 - state.clips.length)} of 8 free clip spaces remain.`}</p></div>
       <form id="feed-form" class="feed-form"><label for="feed-url">Podcast feed address</label><div class="inline-form"><input type="url" id="feed-url" name="feedUrl" placeholder="https://example.com/feed.xml" autocomplete="url"><button class="button secondary" type="submit">Find episodes</button></div><p class="field-help">Paste the show’s feed address. If you do not have it, enter the podcast and episode below.</p><p class="field-help">The app contacts the feed address only after you press Find episodes.</p><p id="feed-status" class="form-status" aria-live="polite"></p><div id="episode-picker"></div></form>

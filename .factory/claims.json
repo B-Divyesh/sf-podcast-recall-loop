@@ -18,7 +18,7 @@
     "claim": "The demo starts with five sample clips and Reset demo restores them",
     "where": "landing action, demo banner, README",
     "test": "npm test -- --grep @claim:demo-seed-reset",
-    "sandbox": "fresh /demo context; assert five authored clips and three due questions, change one, reset, then assert the original counts return"
+    "sandbox": "fresh browser context; click the home action into /?demo=1, assert the banner, five authored clips, and three due questions, complete the queue, reset, then byte-compare the original stored sample"
   },
   {
     "id": "rss-lookup",

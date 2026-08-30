@@ -1,14 +1,14 @@
 # Landing copy audit
 
-Audited 29 August 2026. Counts treat hyphenated terms, prices, versions, and navigation labels as one word. No line exceeds 22 words. No line contains a banned marketing term.
+Audited 30 August 2026. Counts treat hyphenated terms, prices, versions, and navigation labels as one word. No line exceeds 22 words. No line contains a banned marketing term.
 
 ## First screen
 
 | Copy | Words | Result |
 | --- | ---: | --- |
 | Podcast recall for long listens | 5 | Pass |
-| Remember what your podcasts taught you | 6 | Pass; verb-first job headline |
-| For curious listeners who save good moments but forget the ideas. | 11 | Pass; audience and change |
+| Turn podcast moments into recall questions | 6 | Pass; verb-first job headline |
+| For podcast listeners who save useful moments, then forget what they learned. | 11 | Pass; audience and change |
 | Try it with sample data | 5 | Pass; primary action |
 | Opens five sample clips from fictional shows. | 7 | Pass; action result |
 | No setup. | 2 | Pass |
@@ -70,7 +70,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Three podcast ideas, recalled daily. | 5 | Pass |
 | Privacy / Terms | 1 each | Pass; destinations |
 | Built by Param Factory | 4 | Pass |
-| Version 1.0.8 | 2 | Pass; build id without an inaccessible internal reference |
+| Version 1.0.9 | 2 | Pass; build id without an inaccessible internal reference |
 
 ## Metadata and catalog
 
@@ -79,7 +79,7 @@ Read-aloud check: the headline, audience sentence, primary action, and result st
 | Podcast Recall Loop — Remember podcast ideas | 7 | Pass; title under 60 characters |
 | Save a podcast timestamp, write your own question, and recall three ideas each day. | 14 | Pass; meta description |
 | Turn podcast moments into three daily recall questions. | 8 | Pass; social description |
-| Turn podcast moments into questions and recall three ideas each day. | 11 | Pass; verb-first catalog line, 68 characters including the final period |
+| Turn saved podcast moments into questions, then recall three ideas each day. | 12 | Pass; verb-first catalog line, 76 characters including the final period |
 
 ## Terminology
 

@@ -1,20 +1,44 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+const routeTitles: Record<string, string> = {
+  '/': 'Podcast Recall Loop — Remember podcast ideas',
+  '/demo': 'Demo — Podcast Recall Loop',
+  '/app': 'Recall queue — Podcast Recall Loop',
+  '/privacy': 'Privacy — Podcast Recall Loop',
+  '/terms': 'Terms — Podcast Recall Loop',
+  '/missing-page': 'Page not found — Podcast Recall Loop'
+};
+
 for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
   test(`${route} has one clear page structure and no serious accessibility issues`, async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
-    await page.goto(route);
+    const response = await page.goto(route);
+    expect(response?.status()).toBe(route === '/missing-page' ? 404 : 200);
+    expect(await response?.text()).toContain(`<title>${routeTitles[route]}</title>`);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page).toHaveTitle(/Podcast Recall Loop/);
     const results = await new AxeBuilder({ page: page as never }).analyze();
     expect(results.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);
-    expect(consoleErrors).toEqual([]);
+    if (route === '/missing-page') {
+      expect(consoleErrors).toEqual(['Failed to load resource: the server responded with a status of 404 (Not Found)']);
+    } else {
+      expect(consoleErrors).toEqual([]);
+    }
   });
 }
+
+test('every public page links to the real privacy and terms routes', async ({ page }) => {
+  for (const route of Object.keys(routeTitles)) {
+    await page.goto(route);
+    const footer = page.locator('footer.site-footer');
+    await expect(footer.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
+    await expect(footer.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms');
+  }
+});
 
 test('every route updates canonical, Open Graph, and Twitter metadata', async ({ page }) => {
   const expectations: Record<string, { title: string; canonical: string }> = {
@@ -47,8 +71,8 @@ test('keyboard navigation reaches the demo and the primary review action', async
 
 test('cold first screen names the job, audience, sample outcome, and three facts', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Remember what your podcasts taught you');
-  await expect(page.getByText('For curious listeners who save good moments but forget the ideas.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Turn podcast moments into recall questions');
+  await expect(page.getByText('For podcast listeners who save useful moments, then forget what they learned.', { exact: true })).toBeVisible();
   const demo = page.getByRole('link', { name: 'Try it with sample data' });
   await expect(demo).toHaveAttribute('href', '/?demo=1');
   await expect(page.getByText('Opens five sample clips from fictional shows. No setup.', { exact: true })).toBeVisible();
@@ -119,10 +143,14 @@ test('reduced motion removes scrolling and visible movement', async ({ page }) =
 });
 
 test('@claim:demo-seed-reset demo starts at question one and reset restores the five-clip queue', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await expect(page).toHaveURL('/?demo=1');
+  await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved to your notes.');
   await expect(page.getByText('5 saved clips.')).toBeVisible();
   await expect(page.getByLabel('3 questions due')).toBeVisible();
   await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
+  const original = await readStoredDemoState(page);
   for (let index = 0; index < 3; index += 1) {
     await page.getByRole('button', { name: 'Reveal my takeaway' }).click();
     await page.getByRole('button', { name: 'I remembered' }).click();
@@ -133,6 +161,7 @@ test('@claim:demo-seed-reset demo starts at question one and reset restores the 
   await expect(page.getByText('5 saved clips.')).toBeVisible();
   await expect(page.getByLabel('3 questions due')).toBeVisible();
   await expect(page.getByText('Question 1 of 3 today')).toBeVisible();
+  expect(await readStoredDemoState(page)).toEqual(original);
 });
 
 test('@claim:existing-license a returned license is stored, stripped, and automatically verified once per day', async ({ page }) => {
@@ -235,7 +264,7 @@ test('every route shows the build version without referring to private design no
   for (const route of ['/', '/demo', '/app', '/privacy', '/terms', '/missing-page']) {
     await page.goto(route);
     const footer = page.locator('footer.site-footer');
-    await expect(footer.getByText('Version 1.0.8', { exact: true })).toBeVisible();
+    await expect(footer.getByText('Version 1.0.9', { exact: true })).toBeVisible();
     await expect(footer).not.toContainText('design notes');
   }
 });
@@ -248,4 +277,21 @@ async function saveClip(page: import('@playwright/test').Page, question: string)
   await page.getByLabel('Your takeaway').fill('A clear takeaway written by the listener.');
   await page.getByRole('button', { name: 'Save recall question' }).click();
   await expect(page.getByText(question, { exact: true }).first()).toBeVisible();
+}
+
+async function readStoredDemoState(page: import('@playwright/test').Page): Promise<unknown> {
+  return page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('podcast-recall-loop-demo');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const value = await new Promise<unknown>((resolve, reject) => {
+      const request = database.transaction('workspace').objectStore('workspace').get('state');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    database.close();
+    return value;
+  });
 }
