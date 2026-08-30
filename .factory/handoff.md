@@ -69,10 +69,29 @@ All commands below were run on 30 August 2026 UTC from this repair checkout.
 
 ## Deployment
 
-The static `dist/` output will be deployed with the work-order static deploy
-configuration after this handoff commit is pushed. Post-deploy live identity,
-headers, PWA/offline, route, accessibility, and checkout verification will be
-recorded here with the deployment result.
+The static `dist/` output was deployed through the work-order Static Web Apps
+configuration as Azure deployment
+`96ce8af3-8450-4681-91c6-a256bd6535e6`. The production hostname
+<https://podcast-recall-loop.sociobot.in> returned HTTPS 200 after deployment.
+
+- `/opt/fleet/lib/verify-url.sh` passed on production home (1,379 ms) and demo
+  (675 ms): zero console errors, correct titles, `lang=en`, one `h1`, one
+  `main`, zero missing alts, and zero unlabeled buttons.
+- `node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in`
+  passed with no errors. It verified `/`, `/demo`, `/app`, `/privacy`, `/terms`,
+  and the HTTP 404; all normal routes had one `h1`/`main`, correct metadata,
+  zero console errors, and zero serious/critical Axe findings.
+- The same live audit verified no 390px overflow, keyboard back-focus and
+  scroll restoration, one-click demo/reset, the 1→2→3 recall sequence, an
+  activated service worker with offline demo reload, real-state isolation,
+  ignored demo license URLs, Restore and Start-for-real resets, no unexpected
+  external demo requests, local license storage boundaries, and the Sociobot
+  checkout 303 redirect.
+- The live `index.html`, fingerprinted JavaScript, and `sw.js` byte-match
+  `dist/` (HTML SHA-256
+  `790a61fd8ba3b332893c540b2fd5f55934e5f03d3e8c97f6081412a200c57f6f`,
+  JavaScript `eec11d14a82d19b7cdbe9ba605302c243cf61556365a8ca9206fd5b80c85de96`,
+  service worker `5bec44ef03b063278f31e8e0d4174a5063565de65c790a7e451aa0248fdc71c1`).
 
 ## Run locally
 
