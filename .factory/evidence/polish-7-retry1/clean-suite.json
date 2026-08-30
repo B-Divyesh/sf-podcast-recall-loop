@@ -1,0 +1,20 @@
+{
+  "commit": "19652303c5f99c4d7e1efa92aed460edac575051",
+  "nodeModulesPresentBeforeFirstBuild": false,
+  "directNpmRunBuild": {
+    "passed": true,
+    "lockedDependenciesBootstrapped": true,
+    "distIndex": true
+  },
+  "npmTest": { "passed": 92, "failed": 0 },
+  "npmRunTestUnit": { "passed": 17, "failed": 0 },
+  "finalNpmRunBuild": {
+    "passed": true,
+    "javascriptRawBytes": 31601,
+    "javascriptGzipKilobytes": 10.90,
+    "cssRawBytes": 14177,
+    "cssGzipKilobytes": 4.20
+  },
+  "npmAuditHigh": { "vulnerabilities": 0 },
+  "result": "pass"
+}

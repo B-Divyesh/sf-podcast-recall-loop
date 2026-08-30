@@ -1,29 +1,31 @@
-# Podcast Recall Loop — polish round 7 handoff
+# Podcast Recall Loop — polish round 7 retry handoff
 
 ## Outcome
 
-Round 7 is complete and deployed at <https://podcast-recall-loop.sociobot.in>. Product commit `65004e84df44c946831fda7170730da8da099f4d` was deployed through work order `podcast-recall-loop-polish-7` as Azure Static Web Apps deployment `42b3ed95-7833-461a-ae17-0d8cce950fc0`.
+Round 7 retry is complete and deployed at <https://podcast-recall-loop.sociobot.in>. Product commits `19652303c5f99c4d7e1efa92aed460edac575051` and `c61fc1fc39c730aefb940e3efe8bb41f3bf5e74e` were deployed through work order `podcast-recall-loop-polish-7-retry1` as Azure Static Web Apps deployment `b93005b9-d722-48f5-9b8f-1f8673ee6265`.
 
-The remaining F-7-1 privacy mismatch is fixed. `/privacy` now limits the daily promise to automatic stored-license checks. The claim registry uses the same scope. A browser regression proves that two explicit **Verify license** submissions make two requested checks, while a subsequent automatic reload makes none.
+The requested build failure was reproduced before edits: `npm run build` in the dependency-free checkout exited 127 with `tsc: not found`. The build now conditionally installs the lockfile-pinned development tools when they are absent. A clean copy with no `node_modules` passed the same command and produced `dist/index.html`.
 
-All earlier findings F-1-1 through F-6-1 were rechecked rather than accepted from prior dispositions. Demo isolation, queue behavior, claims, routing, focus, 404 handling, legal pages, mobile layout, accessibility, privacy, offline behavior, paid licensing, and the product-specific ceramic visual system remain intact. See [.factory/polish-7.md](polish-7.md) for the finding-by-finding map.
+The first screen now says exactly what to do: **Turn podcast moments into recall questions**. The one-click `?demo=1` path, persistent demo banner, byte-exact reset, storage/license isolation, route metadata, focus restoration, true 404, legal links, mobile layout, and F-7-1 privacy wording all pass locally and live. The glacial ceramic visual system and static offline PWA deployment class are unchanged.
 
 ## Verification
 
-From a clean clone of `65004e8` after `npm ci`:
+From clean clone commit `19652303c5f99c4d7e1efa92aed460edac575051`:
 
-- Every one of the 28 commands in `.factory/claims.json` passed independently.
-- `npm test`: 90 passed across desktop and 390 px mobile Chromium.
-- `npm run test:unit`: 16 passed.
-- `npm run build`: passed and produced `dist/index.html`; JavaScript is 10,827 bytes gzip and CSS is 4,209 bytes gzip.
+- `npm run build` with no installed dependencies: passed; the locked bootstrap ran and created `dist/index.html`.
+- Every command in `.factory/claims.json`: 28/28 passed independently.
+- `npm test`: 92/92 passed across desktop and 390 px mobile Chromium.
+- `npm run test:unit`: 17/17 passed.
+- Final `npm run build`: passed; JavaScript 31,601 bytes raw / 10.90 KB gzip, CSS 14,177 bytes raw / 4.20 KB gzip.
 - `npm audit --audit-level=high`: zero vulnerabilities.
 
-Production evidence:
+Production verification on 30 August 2026:
 
-- [live-browser.json](evidence/polish-7/live-browser.json): cold first screen, isolated demo, offline reload, route metadata, focus/scroll restoration, real 404, exact license storage, two explicit checks, checkout 303, and zero serious/critical Axe findings.
-- [URL verifier — home](evidence/polish-7/verify-home/verify.json) and [demo](evidence/polish-7/verify-demo/verify.json): no console errors and complete structural checks.
-- [Lighthouse](evidence/polish-7/lighthouse-summary.json): 100 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 0.99 s, CLS 0, TBT 33 ms.
-- [Asset hashes](evidence/polish-7/asset-hashes.txt): production HTML, JS, CSS, worker, and manifest match `dist/`.
+- [Structured browser check](evidence/polish-7-retry1/live/live-browser.json): first screen, demo/reset/isolation, offline reload, license privacy, route metadata, focus/scroll, legal links, 404, checkout, and Axe.
+- [Home](evidence/polish-7-retry1/live-home/verify.json) and [demo](evidence/polish-7-retry1/live-demo/verify.json) URL verifiers: no console errors or structural failures.
+- [Lighthouse](evidence/polish-7-retry1/lighthouse-summary.json): 100/100/100/100; LCP 1.1 s, CLS 0, TBT 0 ms.
+- [Deployment hashes](evidence/polish-7-retry1/asset-hashes.txt): HTML, JS, CSS, service worker, and manifest all match local `dist/`.
+- [Finding map](polish-7.md): every F-1-1 through F-7-1 item maps to its change, test, screenshot, and live check.
 
 ## Run locally
 
@@ -39,4 +41,4 @@ Open `http://localhost:4173/?demo=1` for the isolated sample workspace.
 
 ## Known gaps and next steps
 
-None. No review finding, test failure, accessibility issue, deployment mismatch, or deferred minor item remains.
+None. No review finding, failed claim, accessibility issue, privacy leak, route defect, build failure, deployment mismatch, or deferred minor item remains.
