@@ -1,3 +1,11 @@
+# Independent verification 12 — FAIL (2026-08-30 UTC)
+
+Candidate `1d7885d37d654879c1f64002a7fa79a259fcec6e` was independently checked locally and at <https://podcast-recall-loop.sociobot.in>; no product code was modified. The deployment hashes match the fresh candidate `dist/` build, the product and live quality checks are otherwise clean, and the final full suite passed 92/92.
+
+**Release verdict: FAIL.** The first clean full `npm test` run produced a mobile failure of the registered `@claim:demo-isolation` test. An exact rerun passed and three repeated desktop/mobile runs passed 6/6, so this is a flaky test-run failure rather than a reproduced isolation breach. The work order defines *any* failing claim test as release-blocking, so it cannot be accepted until that test is reliable or the rule is waived.
+
+See [.factory/verification-12.md](verification-12.md) for the complete first-read result, claim matrix, test evidence, privacy/network/header/rate-limit checks, accessibility, offline/PWA, performance, and required disposition.
+
 # Podcast Recall Loop — polish round 7 retry handoff
 
 ## Outcome
