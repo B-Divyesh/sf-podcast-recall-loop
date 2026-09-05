@@ -26,7 +26,9 @@ const hostedCheckout = await fetch(hostedCheckoutUrl, { redirect: 'error' });
 assert(hostedCheckout.status === 200, `Hosted checkout returned ${hostedCheckout.status}, expected 200.`);
 const hostedCheckoutPage = await hostedCheckout.text();
 assert(/Podcast Recall Loop/.test(hostedCheckoutPage), 'Hosted checkout did not show Podcast Recall Loop.');
-assert(/(?:USD|\$9\.00)/.test(hostedCheckoutPage), 'Hosted checkout did not show the advertised USD $9 price.');
+assert(/\bUSD\b/.test(hostedCheckoutPage), 'Hosted checkout did not show USD.');
+assert(/\$9\.00/.test(hostedCheckoutPage), 'Hosted checkout did not show the advertised $9.00 price.');
+assert(/\b900\b/.test(hostedCheckoutPage), 'Hosted checkout did not show the 900-cent amount.');
 assert(/one[ _-]?time/i.test(hostedCheckoutPage), 'Hosted checkout did not show one-time billing.');
 
 const statuses = [];
@@ -53,7 +55,9 @@ console.log(JSON.stringify({
   hostedCheckout: {
     status: hostedCheckout.status,
     productPresent: true,
-    usdNineDollarPricePresent: true,
+    currencyPresent: true,
+    nineDollarPricePresent: true,
+    amountInCentsPresent: true,
     oneTimeBillingPresent: true
   },
   verification: {
