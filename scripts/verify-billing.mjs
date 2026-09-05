@@ -15,7 +15,19 @@ function positiveRetryAfter(value) {
 
 const checkout = await fetch(`${API}/checkout`, { redirect: 'manual' });
 assert(checkout.status === 303, `Checkout returned ${checkout.status}, expected 303.`);
-assert(Boolean(checkout.headers.get('location')), 'Checkout did not provide a redirect location.');
+const checkoutLocation = checkout.headers.get('location');
+assert(Boolean(checkoutLocation), 'Checkout did not provide a redirect location.');
+const hostedCheckoutUrl = new URL(checkoutLocation);
+assert(
+  hostedCheckoutUrl.protocol === 'https:' && hostedCheckoutUrl.hostname === 'checkout.dodopayments.com',
+  `Checkout redirected to an unexpected host: ${hostedCheckoutUrl.hostname}.`
+);
+const hostedCheckout = await fetch(hostedCheckoutUrl, { redirect: 'error' });
+assert(hostedCheckout.status === 200, `Hosted checkout returned ${hostedCheckout.status}, expected 200.`);
+const hostedCheckoutPage = await hostedCheckout.text();
+assert(/Podcast Recall Loop/.test(hostedCheckoutPage), 'Hosted checkout did not show Podcast Recall Loop.');
+assert(/(?:USD|\$9\.00)/.test(hostedCheckoutPage), 'Hosted checkout did not show the advertised USD $9 price.');
+assert(/one[ _-]?time/i.test(hostedCheckoutPage), 'Hosted checkout did not show one-time billing.');
 
 const statuses = [];
 let rateLimit = null;
@@ -38,6 +50,12 @@ assert(rateLimit, `No rate limit was observed after ${maximumAttempts} requests.
 console.log(JSON.stringify({
   checkedAt: new Date().toISOString(),
   checkout: { status: checkout.status, locationPresent: true },
+  hostedCheckout: {
+    status: hostedCheckout.status,
+    productPresent: true,
+    usdNineDollarPricePresent: true,
+    oneTimeBillingPresent: true
+  },
   verification: {
     successfulAllowance: rateLimit.attempt - 1,
     rateLimitStatus: 429,

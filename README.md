@@ -39,9 +39,10 @@ Vite serves the development site at `http://localhost:4173`.
 npm test
 npm run test:unit
 npm run build
+npm run verify:billing-live
 ```
 
-The Playwright suite checks every claim, offline reload, keyboard use, mobile width, route structure, and serious accessibility findings. Vitest covers data and release configuration. The production command writes `index.html` and fingerprinted static assets to `dist/`.
+The Playwright suite checks every claim, offline reload, keyboard use, mobile width, route structure, and serious accessibility findings. Vitest covers data and release configuration. Run the billing check before a release. It confirms the hosted checkout opens for the advertised one-time USD $9 product and that invalid license checks are rate limited. The production command writes `index.html` and fingerprinted static assets to `dist/`.
 
 The production build also stamps the service worker from those asset fingerprints. Installed copies therefore receive every new app build without a manual cache-version edit.
 
