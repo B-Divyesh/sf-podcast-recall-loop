@@ -1,6 +1,6 @@
 # Landing copy audit
 
-Audited 30 August 2026. Counts treat hyphenated terms, prices, versions, and navigation labels as one word. No line exceeds 22 words. No line contains a banned marketing term.
+Audited 5 September 2026. Counts treat hyphenated terms, prices, versions, and navigation labels as one word. No line exceeds 22 words. No line contains a banned marketing term.
 
 ## First screen
 
