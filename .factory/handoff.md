@@ -1,43 +1,42 @@
-# Podcast Recall Loop — verification 15 handoff
+# Podcast Recall Loop — review 9 handoff
 
 ## Outcome: PASS
 
-Independent QA of `7158503d6f505e6c8a4f4f73dd69450578868e5b` passed with zero
-findings and zero untested public claims. The later documentation/evidence
-revision is `6d03c3a7446f48bb87ffd19b0c68b23006d9b58e`; it does not change the
-product artifact.
+Review 9 passed with **zero findings** and **zero untested public claims**.
+The implementation reviewed is `7158503d6f505e6c8a4f4f73dd69450578868e5b`.
+The report revision is `cb6bd5f0a1035e27c1a4c06170a6a6ef725646d9`; it changes
+documentation only.
 
-Podcast Recall Loop lets self-learners save a podcast moment, write their own
-recall question and takeaway, then review up to three due questions daily. The
+Podcast Recall Loop helps self-learners save a podcast moment, write a recall
+question and takeaway, then review up to three due questions each day. The
 first action is **Try it with sample data**, which opens five fictional-show
 clips in an isolated demo.
 
-## Verified
+## What review 9 verified
 
-- `npm ci` completed; audit reported 0 vulnerabilities.
+- `npm ci` and `npm audit --audit-level=high` completed with 0 reported
+  vulnerabilities.
 - Every one of 28 declared claim commands passed independently. `npm test`
   passed 98/98 and `npm run test:unit` passed 17/17.
-- `npm run build` produced `dist/`: initial JS is 11.01 KB gzip and CSS is
-  4.21 KB gzip.
-- Desktop and 390 px live checks confirmed the cold first screen, one-click
-  demo, persistent sample label, five clips/three-question queue, reset,
-  demo isolation, offline reload, keyboard/focus behavior, legal routes, and
-  expected 404 design.
-- `verify-url.sh` reported a 678 ms cold load and no console/structure errors.
-  Axe found no serious/critical issue on every route. Mobile Lighthouse scored
-  100 performance, 100 accessibility, 100 best practices, and 100 SEO.
-- Live assets byte-match the local build. Privacy request logging found no
-  tracking or saved-note data requests to another origin.
-- `npm run verify:billing-live` passed: checkout is 303 to a hosted 200 page
-  with Podcast Recall Loop, USD $9.00, 900 cents, and one-time billing; 30
-  invalid license checks were allowed, then 429 supplied `Retry-After: 4`.
+- `npm run build` produced `dist/`; initial JavaScript is 11.07 KB gzip and
+  CSS is 4.20 KB gzip.
+- Fresh desktop and 390 px phone sessions confirmed the cold first screen,
+  one-click demo, persistent sample label, five clips/three-question queue,
+  reset, demo isolation, offline reload, keyboard/focus behavior, legal
+  routes, route metadata, and the expected designed 404.
+- `verify-url.sh` reported 747 ms for home and 570 ms for demo with no console
+  or structure errors. Axe found no serious/critical issue on every route.
+  Mobile Lighthouse scored 100 performance, 100 accessibility, 100 best
+  practices, and 100 SEO.
+- Live JavaScript, CSS, and service-worker bytes match the fresh implementation
+  build. Privacy request logging found no tracking or saved-note data sent to
+  another origin.
+- `npm run verify:billing-live` passed: checkout returned 303 to a hosted 200
+  page with Podcast Recall Loop, USD $9.00, 900 cents, and one-time billing.
+  Thirty invalid checks were allowed before 429 with `Retry-After: 4`.
 
-## Earlier finding disposition
-
-All earlier findings (`F-1-1` through `F-8-1`, including `F-12-1`,
-`F-13-1`, and `F-13-2`) remain fixed. In particular, the prior live checkout
-failure now reaches the complete hosted checkout and rejected licenses stay
-locked to the eight-clip free limit.
+All earlier findings through `F-13-2`, including the checkout outage and the
+flaky demo-isolation test, were rechecked and remain fixed.
 
 ## Run and verify
 
@@ -53,9 +52,6 @@ node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/live-c
 
 ## Known gaps and next steps
 
-No product finding remains. Hosted checkout availability is an external
-Sociobot/Dodo dependency; keep `npm run verify:billing-live` in release checks
-to detect a future outage.
-
-Detailed evidence and the final verdict are in
-`.factory/verification-15.md`.
+No product finding remains. Hosted checkout availability is external; keep
+`npm run verify:billing-live` in release checks. See `.factory/review-9.md`
+for the complete review evidence.
