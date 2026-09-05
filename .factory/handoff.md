@@ -1,81 +1,61 @@
-# Podcast Recall Loop — repair 10 handoff
+# Podcast Recall Loop — verification 15 handoff
 
 ## Outcome: PASS
 
-Podcast Recall Loop helps self-learners turn a saved podcast moment into a
-learner-written recall question. The first action is **Try it with sample
-data**, which opens five fictional-show clips without setup.
+Independent QA of `7158503d6f505e6c8a4f4f73dd69450578868e5b` passed with zero
+findings and zero untested public claims. The later documentation/evidence
+revision is `6d03c3a7446f48bb87ffd19b0c68b23006d9b58e`; it does not change the
+product artifact.
 
-Implementation commits: `0c6b2fccf57143b92609c0659ab03bde73539420`
-(`fix: verify hosted checkout outcome`) and
-`7158503d6f505e6c8a4f4f73dd69450578868e5b`
-(`test: assert live checkout price details`). Documentation/evidence commit:
-`9a286213b762274185cd806cdf26896c0f34be2f`
-(`docs: record checkout repair evidence`).
+Podcast Recall Loop lets self-learners save a podcast moment, write their own
+recall question and takeaway, then review up to three due questions daily. The
+first action is **Try it with sample data**, which opens five fictional-show
+clips in an isolated demo.
 
-## Repair
+## Verified
 
-Review 8's F-8-1 was a live Sociobot checkout outage: the static app already
-used the registered product endpoint, but the endpoint returned HTTP 500. The
-production dependency now returns HTTP 303 to the hosted checkout, which
-returns HTTP 200 and visibly shows Podcast Recall Loop, USD $9.00, and
-one-time billing.
-
-`npm run verify:billing-live` now follows the redirect and checks that full
-buyer-facing result. It also verifies invalid-license rate limiting and a
-positive `Retry-After`. The README makes this a required pre-release check.
+- `npm ci` completed; audit reported 0 vulnerabilities.
+- Every one of 28 declared claim commands passed independently. `npm test`
+  passed 98/98 and `npm run test:unit` passed 17/17.
+- `npm run build` produced `dist/`: initial JS is 11.01 KB gzip and CSS is
+  4.21 KB gzip.
+- Desktop and 390 px live checks confirmed the cold first screen, one-click
+  demo, persistent sample label, five clips/three-question queue, reset,
+  demo isolation, offline reload, keyboard/focus behavior, legal routes, and
+  expected 404 design.
+- `verify-url.sh` reported a 678 ms cold load and no console/structure errors.
+  Axe found no serious/critical issue on every route. Mobile Lighthouse scored
+  100 performance, 100 accessibility, 100 best practices, and 100 SEO.
+- Live assets byte-match the local build. Privacy request logging found no
+  tracking or saved-note data requests to another origin.
+- `npm run verify:billing-live` passed: checkout is 303 to a hosted 200 page
+  with Podcast Recall Loop, USD $9.00, 900 cents, and one-time billing; 30
+  invalid license checks were allowed, then 429 supplied `Retry-After: 4`.
 
 ## Earlier finding disposition
 
-| Findings | Current disposition |
-| --- | --- |
-| F-1-1 through F-1-12 | Fixed: demo isolation/disposal, claim coverage, route metadata, plain language, review scheduling, license restore, and calendar export remain covered. |
-| F-2-1 through F-2-3 | Fixed: feed requests stay explicit, Atom fills the form, and Back restores scroll and heading focus. |
-| F-3-1; F-4-1 through F-4-6 | Fixed: every demo exit disposes sample changes; the capped daily queue, reset, privacy flow, README wording, product copy, and Node range remain covered. |
-| F-5-1; F-6-1; F-7-1 | Fixed: no inaccessible footer reference; privacy documents token/verdict storage and scopes the daily check to automatic checks. |
-| F-12-1 | Fixed: the demo-isolation claim completed in the final 98-test two-worker run. |
-| F-13-2 | Fixed: a rejected license stays locked with eight free spaces. |
-| F-13-1; F-8-1 | Fixed in production: direct and browser checkout now reach a 200 hosted $9 USD one-time checkout; the health check protects this outcome. |
+All earlier findings (`F-1-1` through `F-8-1`, including `F-12-1`,
+`F-13-1`, and `F-13-2`) remain fixed. In particular, the prior live checkout
+failure now reaches the complete hosted checkout and rejected licenses stay
+locked to the eight-clip free limit.
 
-## Verification
+## Run and verify
 
-- Clean setup: `npm ci` completed with 0 audit vulnerabilities.
-- Every one of the 28 commands in `.factory/claims.json` passed independently.
-- `npm test`: 98/98 passed. `npm run test:unit`: 17/17 passed.
-- `npm run build` passed and produced `dist/` (11.07 KB gzip JS; 4.20 KB gzip CSS).
-- `npm run verify:billing-live` after deployment: 303 checkout, hosted 200
-  product/price/billing result, then 30 invalid-license 200 responses followed
-  by 429 with `Retry-After: 4`.
-- Fresh 390×844 and 1440×900 browser contexts confirmed the job, audience, and
-  first action before scrolling. The one-click demo showed its persistent
-  sample label, realistic populated queue, reset, offline reload, and no
-  changes to seeded real notes or license storage.
-- Post-deploy live checks passed for `/`, `/demo`, `/app`, `/privacy`, and
-  `/terms`; `/missing-page` returned the expected 404. All routes had one h1,
-  one main landmark, correct titles, and 0 serious/critical Axe findings.
-- `verify-url.sh` reported a 694 ms cold load with no console errors, `lang`,
-  title, main landmark, and complete image alternatives.
-- Browser checkout opened `checkout.dodopayments.com` and showed the product,
-  USD $9 price, and one-time billing with no console errors.
-- Mobile Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
-  SEO 100; FCP 0.9 s, LCP 1.1 s, CLS 0, TBT 10 ms, 77 KiB transfer.
-- Deployed `index.html`, JS, CSS, social image, service worker, and manifest
-  byte-match this build; hashes are in
-  [asset-hashes.txt](evidence/repair-10-live/asset-hashes.txt).
+```sh
+npm ci
+npm test
+npm run test:unit
+npm audit --audit-level=high
+npm run build
+npm run verify:billing-live
+node scripts/verify-live.mjs https://podcast-recall-loop.sociobot.in /tmp/live-check
+```
 
-Evidence: [live browser report](evidence/repair-10-live/post-deploy-browser/live-browser.json),
-[URL check](evidence/repair-10-live/post-deploy-verify-url/verify.json), and
-[mobile Lighthouse report](evidence/repair-10-live/lighthouse-mobile.json).
+## Known gaps and next steps
 
-## Deployment
+No product finding remains. Hosted checkout availability is an external
+Sociobot/Dodo dependency; keep `npm run verify:billing-live` in release checks
+to detect a future outage.
 
-The built `dist/` artifact was deployed to the existing `sf-podcast-recall-loop`
-Static Web App on 5 September 2026 UTC. The product custom domain remained
-ready and HTTPS returned 200 after deployment. This static product has no
-database, volume, or replica setting to change.
-
-## Known gap
-
-No product finding remains. Checkout availability is an external Sociobot/Dodo
-dependency; the required live billing health check detects a future outage but
-cannot make that provider available.
+Detailed evidence and the final verdict are in
+`.factory/verification-15.md`.
