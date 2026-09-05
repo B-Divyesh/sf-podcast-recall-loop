@@ -6,8 +6,10 @@ Podcast Recall Loop helps self-learners turn a saved podcast moment into a
 learner-written recall question. The first action is **Try it with sample
 data**, which opens five fictional-show clips without setup.
 
-Implementation commit: `0c6b2fccf57143b92609c0659ab03bde73539420`
-(`fix: verify hosted checkout outcome`). Documentation/evidence commit:
+Implementation commits: `0c6b2fccf57143b92609c0659ab03bde73539420`
+(`fix: verify hosted checkout outcome`) and
+`7158503d6f505e6c8a4f4f73dd69450578868e5b`
+(`test: assert live checkout price details`). Documentation/evidence commit:
 `9a286213b762274185cd806cdf26896c0f34be2f`
 (`docs: record checkout repair evidence`).
 
